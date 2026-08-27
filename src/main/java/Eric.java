@@ -16,13 +16,30 @@ public class Eric {
         System.out.println("____________________________________________________________");
 
         Scanner in = new Scanner(System.in);
+        String[] tasks = new String[100];
+        int taskCount = 0;
 
         String input = in.nextLine();
 
         while (!input.equals("bye")) {
+            if (input.equals("list")) {
+                System.out.println("____________________________________________________________");
+
+                for (int i = 0; i < taskCount; i++) {
+                    System.out.println(" " + (i + 1) + ". " + tasks[i]);
+                }
+
+                System.out.println("____________________________________________________________");
+            }
+            else {
+            tasks[taskCount] = input;
+            taskCount++;
+
             System.out.println("____________________________________________________________");
-            System.out.println(input);
+            System.out.println(" added: " + input);
             System.out.println("____________________________________________________________");
+            }
+
             input = in.nextLine();
         }
 
