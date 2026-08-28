@@ -26,7 +26,9 @@ public class Eric {
                 System.out.println("____________________________________________________________");
 
                 for (int i = 0; i < taskCount; i++) {
-                    System.out.println(" " + (i + 1) + ". " + tasks[i].description);
+                    System.out.println(" " + (i + 1) + ".["
+                            + tasks[i].getStatusIcon() + "] "
+                            + tasks[i].description);
                 }
 
                 System.out.println("____________________________________________________________");
