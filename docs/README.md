@@ -61,6 +61,20 @@ Example: `mark 1`
    [T][X] read book
 ```
 
+## Deleting a task
+
+Removes a task from the list, using its number in the list. The remaining tasks are renumbered.
+
+Format: `delete INDEX`
+
+Example: `delete 3`
+
+```
+ Noted. I've removed this task:
+   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+ Now you have 4 tasks in the list.
+```
+
 ## Exiting
 
 Format: `bye`
