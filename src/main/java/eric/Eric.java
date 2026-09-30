@@ -41,11 +41,11 @@ public class Eric {
                 markTaskByInput(tasks, taskCount, input.substring(PREFIX_MARK.length()), true);
             } else if (input.startsWith(PREFIX_UNMARK)) {
                 markTaskByInput(tasks, taskCount, input.substring(PREFIX_UNMARK.length()), false);
-            } else if (input.equals(COMMAND_TODO) || input.startsWith(COMMAND_TODO + " ")) {
+            } else if (isCommand(input, COMMAND_TODO)) {
                 taskCount = addTask(tasks, taskCount, parseTodo(input));
-            } else if (input.equals(COMMAND_DEADLINE) || input.startsWith(COMMAND_DEADLINE + " ")) {
+            } else if (isCommand(input, COMMAND_DEADLINE)) {
                 taskCount = addTask(tasks, taskCount, parseDeadline(input));
-            } else if (input.equals(COMMAND_EVENT) || input.startsWith(COMMAND_EVENT + " ")) {
+            } else if (isCommand(input, COMMAND_EVENT)) {
                 taskCount = addTask(tasks, taskCount, parseEvent(input));
             } else {
                 printWithDivider(" OOPS!!! I'm sorry, but I don't know what that means :-(");
@@ -57,6 +57,11 @@ public class Eric {
 
         in.close();
         printWithDivider(" Bye. Hope to see you again soon!");
+    }
+
+    /** Returns true if {@code input} is exactly {@code command} or starts with it followed by a space. */
+    private static boolean isCommand(String input, String command) {
+        return input.equals(command) || input.startsWith(command + " ");
     }
 
     /** Prints the startup banner and greeting. */
