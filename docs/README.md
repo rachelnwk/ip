@@ -75,6 +75,16 @@ Example: `delete 3`
  Now you have 4 tasks in the list.
 ```
 
+## Saving and loading
+
+Eric saves your tasks to `data/duke.txt` (next to where you run Eric) every time the list changes, and loads them again when it starts. The `data` folder and file are created automatically, so nothing is needed on a first run.
+
+Each line is one task: `T | 1 | read book` (todo), `D | 0 | return book | June 6th` (deadline) or `E | 0 | project meeting | Mon 2pm | 4pm` (event). The second column is `1` for done and `0` for not done.
+
+Task text cannot contain a `|` with spaces on both sides (` | `), because that separates the columns. A `|` without spaces, such as `a|b`, is fine.
+
+If the file cannot be used, for example it has a line in the wrong format, is not text, or is a folder, Eric does not load any of it. It tells you why (for a wrong format, every bad line and its reason), and starts with an empty list. The file is replaced the next time your tasks change, so to keep it, close Eric and fix or move the file first.
+
 ## Exiting
 
 Format: `bye`

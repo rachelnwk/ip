@@ -4,6 +4,9 @@ package eric.task;
  * A task that must be done by a given time, e.g. "deadline return book /by Sunday".
  */
 public class Deadline extends Task {
+    /** One-letter tag of this task type, used in the list and in the save file. */
+    public static final String TYPE_ICON = "D";
+
     /** When the task must be done, as free text. */
     protected String by;
 
@@ -20,7 +23,12 @@ public class Deadline extends Task {
 
     @Override
     public String getTypeIcon() {
-        return "D";
+        return TYPE_ICON;
+    }
+
+    @Override
+    public String toFileString() {
+        return super.toFileString() + FILE_SEPARATOR + by;
     }
 
     @Override

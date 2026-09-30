@@ -1,9 +1,13 @@
 package eric;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import eric.storage.Storage;
+import eric.storage.StorageException;
 import eric.task.Deadline;
 import eric.task.Event;
 import eric.task.Task;
@@ -15,6 +19,10 @@ import eric.task.Todo;
  */
 public class Eric {
     private static final String DIVIDER = "____________________________________________________________";
+
+    /** Where tasks are saved, relative to the folder Eric is run from. Path.of keeps it OS-independent. */
+    private static final Path DATA_FILE_PATH = Path.of("data", "duke.txt");
+    private static final Storage STORAGE = new Storage(DATA_FILE_PATH);
 
     private static final String COMMAND_LIST = "list";
     private static final String COMMAND_MARK = "mark";
@@ -46,7 +54,7 @@ public class Eric {
         printBanner();
 
         Scanner in = new Scanner(System.in);
-        List<Task> tasks = new ArrayList<>();
+        List<Task> tasks = loadTasks();
 
         String input = readInput(in);
 
@@ -157,6 +165,7 @@ public class Eric {
         tasks.add(task);
         printWithDivider(" Got it. I've added this task:\n   " + task
                 + "\n Now you have " + tasks.size() + " tasks in the list.");
+        saveTasks(tasks);
     }
 
     /** Parses "todo DESCRIPTION"; returns null (after printing an error) if the description is empty. */
@@ -167,7 +176,10 @@ public class Eric {
                     "Type a description after \"todo\", e.g. " + EXAMPLE_TODO);
             return null;
         }
-        return new Todo(description);
+        if (hasNoFileSeparator(description)) {
+            return new Todo(description);
+        }
+        return null;
     }
 
     /** Parses "deadline DESCRIPTION /by DATE"; returns null (after printing an error) if invalid. */
@@ -192,7 +204,10 @@ public class Eric {
                     "Type when the task is due after /by, e.g. " + EXAMPLE_DEADLINE);
             return null;
         }
-        return new Deadline(description, by);
+        if (hasNoFileSeparator(description, by)) {
+            return new Deadline(description, by);
+        }
+        return null;
     }
 
     /** Parses "event DESCRIPTION /from START /to END"; returns null (after printing an error) if invalid. */
@@ -222,7 +237,27 @@ public class Eric {
                     "Type when the event ends after /to, e.g. " + EXAMPLE_EVENT);
             return null;
         }
-        return new Event(description, from, to);
+        if (hasNoFileSeparator(description, from, to)) {
+            return new Event(description, from, to);
+        }
+        return null;
+    }
+
+    /**
+     * Returns true if none of {@code texts} contains the separator of the save file columns. Otherwise
+     * prints an error, because such a task could not be read back from the file, and returns false.
+     */
+    private static boolean hasNoFileSeparator(String... texts) {
+        for (String text : texts) {
+            if (text.contains(Task.FILE_SEPARATOR)) {
+                printError("A task can't contain \"" + Task.FILE_SEPARATOR + "\", because that separates "
+                        + "the columns of the save file.",
+                        "Remove the \"" + Task.FILE_SEPARATOR
+                        + "\" from your command, e.g. use a comma instead.");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -258,6 +293,7 @@ public class Eric {
             return;
         }
         setTaskDone(tasks.get(index), isDone);
+        saveTasks(tasks);
     }
 
     /** Deletes the task whose 1-based number is in {@code numberText}, reporting invalid input. */
@@ -269,6 +305,7 @@ public class Eric {
         Task removedTask = tasks.remove(index);
         printWithDivider(" Noted. I've removed this task:\n   " + removedTask
                 + "\n Now you have " + tasks.size() + " tasks in the list.");
+        saveTasks(tasks);
     }
 
     /**
@@ -326,6 +363,37 @@ public class Eric {
         } else {
             task.markUndone();
             printWithDivider(" OK, I've marked this task as not done yet:\n   " + task);
+        }
+    }
+
+    /**
+     * Returns the tasks saved in the data file, or an empty list if nothing has been saved yet.
+     * If the file is unusable, it is rejected as a whole: the problem is reported to the user and
+     * Eric starts with an empty list instead of failing.
+     */
+    private static List<Task> loadTasks() {
+        try {
+            return STORAGE.load();
+        } catch (StorageException exception) {
+            reportRejectedDataFile("because " + exception.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /** Tells the user that the data file was not loaded, why, and how to keep it. */
+    private static void reportRejectedDataFile(String reason) {
+        printError("I couldn't load your saved tasks from " + STORAGE.getFilePath() + " " + reason,
+                "Starting with an empty list. The file will be replaced the next time your tasks change."
+                + " To keep it, close Eric, then fix or move the file.");
+    }
+
+    /** Saves {@code tasks} to the data file, and reports to the user if that fails. */
+    private static void saveTasks(List<Task> tasks) {
+        try {
+            STORAGE.save(tasks);
+        } catch (IOException exception) {
+            printError("I couldn't save your tasks to " + STORAGE.getFilePath() + ".",
+                    "Check that the folder can be written to. Reason: " + exception.getMessage());
         }
     }
 
