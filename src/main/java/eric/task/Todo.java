@@ -4,6 +4,9 @@ package eric.task;
  * A task with no date attached, e.g. "todo read book".
  */
 public class Todo extends Task {
+    /** One-letter tag of this task type, used in the list and in the save file. */
+    public static final String TYPE_ICON = "T";
+
     /**
      * Creates a todo task.
      *
@@ -15,6 +18,6 @@ public class Todo extends Task {
 
     @Override
     public String getTypeIcon() {
-        return "T";
+        return TYPE_ICON;
     }
 }
