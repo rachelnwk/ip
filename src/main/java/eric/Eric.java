@@ -111,10 +111,10 @@ public class Eric {
             return taskCount;
         }
         tasks[taskCount] = task;
-        taskCount++;
+        int newTaskCount = taskCount + 1;
         printWithDivider(" Got it. I've added this task:\n   " + task
-                + "\n Now you have " + taskCount + " tasks in the list.");
-        return taskCount;
+                + "\n Now you have " + newTaskCount + " tasks in the list.");
+        return newTaskCount;
     }
 
     /** Parses "todo DESCRIPTION"; returns null (after printing an error) if the description is empty. */
