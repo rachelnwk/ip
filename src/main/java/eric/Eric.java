@@ -10,6 +10,16 @@ public class Eric {
     private static final String DIVIDER = "____________________________________________________________";
     private static final int MAX_TASKS = 100;
 
+    private static final String PREFIX_MARK = "mark ";
+    private static final String PREFIX_UNMARK = "unmark ";
+    private static final String COMMAND_TODO = "todo";
+    private static final String COMMAND_DEADLINE = "deadline";
+    private static final String COMMAND_EVENT = "event";
+
+    private static final String MARKER_BY = "/by ";
+    private static final String MARKER_FROM = "/from ";
+    private static final String MARKER_TO = "/to ";
+
     /**
      * Runs the chatbot until the user types "bye" or input ends.
      *
@@ -27,15 +37,15 @@ public class Eric {
         while (!input.equals("bye")) {
             if (input.equals("list")) {
                 printTaskList(tasks, taskCount);
-            } else if (input.startsWith("mark ")) {
-                markTaskByInput(tasks, taskCount, input.substring(5), true);
-            } else if (input.startsWith("unmark ")) {
-                markTaskByInput(tasks, taskCount, input.substring(7), false);
-            } else if (input.equals("todo") || input.startsWith("todo ")) {
+            } else if (input.startsWith(PREFIX_MARK)) {
+                markTaskByInput(tasks, taskCount, input.substring(PREFIX_MARK.length()), true);
+            } else if (input.startsWith(PREFIX_UNMARK)) {
+                markTaskByInput(tasks, taskCount, input.substring(PREFIX_UNMARK.length()), false);
+            } else if (input.equals(COMMAND_TODO) || input.startsWith(COMMAND_TODO + " ")) {
                 taskCount = addTask(tasks, taskCount, parseTodo(input));
-            } else if (input.equals("deadline") || input.startsWith("deadline ")) {
+            } else if (input.equals(COMMAND_DEADLINE) || input.startsWith(COMMAND_DEADLINE + " ")) {
                 taskCount = addTask(tasks, taskCount, parseDeadline(input));
-            } else if (input.equals("event") || input.startsWith("event ")) {
+            } else if (input.equals(COMMAND_EVENT) || input.startsWith(COMMAND_EVENT + " ")) {
                 taskCount = addTask(tasks, taskCount, parseEvent(input));
             } else {
                 printWithDivider(" OOPS!!! I'm sorry, but I don't know what that means :-(");
@@ -92,7 +102,7 @@ public class Eric {
 
     /** Parses "todo DESCRIPTION"; returns null (after printing an error) if the description is empty. */
     private static Task parseTodo(String input) {
-        String description = input.length() > 4 ? input.substring(4).trim() : "";
+        String description = input.substring(COMMAND_TODO.length()).trim();
         if (description.isEmpty()) {
             printWithDivider(" OOPS!!! The description of a todo cannot be empty.");
             return null;
@@ -102,8 +112,8 @@ public class Eric {
 
     /** Parses "deadline DESCRIPTION /by DATE"; returns null (after printing an error) if malformed. */
     private static Task parseDeadline(String input) {
-        String args = input.length() > 8 ? input.substring(8).trim() : "";
-        int byIndex = args.indexOf("/by ");
+        String args = input.substring(COMMAND_DEADLINE.length()).trim();
+        int byIndex = args.indexOf(MARKER_BY);
         if (byIndex == -1) {
             printWithDivider(" OOPS!!! A deadline needs a description and a /by date, "
                     + "e.g. deadline return book /by Sunday");
@@ -111,7 +121,7 @@ public class Eric {
         }
 
         String description = args.substring(0, byIndex).trim();
-        String by = args.substring(byIndex + 4).trim();
+        String by = args.substring(byIndex + MARKER_BY.length()).trim();
         if (description.isEmpty() || by.isEmpty()) {
             printWithDivider(" OOPS!!! A deadline needs a description and a /by date, "
                     + "e.g. deadline return book /by Sunday");
@@ -122,9 +132,9 @@ public class Eric {
 
     /** Parses "event DESCRIPTION /from START /to END"; returns null (after printing an error) if invalid. */
     private static Task parseEvent(String input) {
-        String args = input.length() > 5 ? input.substring(5).trim() : "";
-        int fromIndex = args.indexOf("/from ");
-        int toIndex = args.indexOf("/to ");
+        String args = input.substring(COMMAND_EVENT.length()).trim();
+        int fromIndex = args.indexOf(MARKER_FROM);
+        int toIndex = args.indexOf(MARKER_TO);
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
             printWithDivider(" OOPS!!! An event needs a description, a /from time, and a /to time, "
                     + "e.g. event project meeting /from Mon 2pm /to 4pm");
@@ -132,8 +142,8 @@ public class Eric {
         }
 
         String description = args.substring(0, fromIndex).trim();
-        String from = args.substring(fromIndex + 6, toIndex).trim();
-        String to = args.substring(toIndex + 4).trim();
+        String from = args.substring(fromIndex + MARKER_FROM.length(), toIndex).trim();
+        String to = args.substring(toIndex + MARKER_TO.length()).trim();
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
             printWithDivider(" OOPS!!! An event needs a description, a /from time, and a /to time, "
                     + "e.g. event project meeting /from Mon 2pm /to 4pm");
