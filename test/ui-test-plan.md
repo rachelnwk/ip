@@ -9,6 +9,7 @@ Tests the Eric command-line UI end to end. Run with the `test-ui` skill
 - The startup banner and greeting are stripped from the output before comparing, so **Expected output** starts right after the banner.
 - The comparison is exact, line by line, ignoring trailing whitespace.
 - Each test case runs in its own empty temporary folder, so `data/duke.txt` starts out missing and real data is never touched.
+- A test case may add an `**Initial file (data/duke.txt):**` block after its aim; it is written to `data/duke.txt` before Eric starts. Without it, the file does not exist at startup.
 - A test case may add an `**Expected file (data/duke.txt):**` block after its expected output; the saved file is then compared too. Use `(file not created)` when no file should exist.
 - The session stops at the first failing test case and reports the actual and expected output.
 - Every input block ends with `bye` so the program exits normally.
@@ -2503,4 +2504,545 @@ T | 0 | task 7
 T | 0 | task 8
 T | 0 | task 9
 T | 1 | task 10
+```
+
+## TC59: Load all task types
+
+**Aim:** Check that every task type and done flag in the save file is loaded and shown by `list`, and the file is left unchanged.
+
+**Initial file (data/duke.txt):**
+```
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+T | 1 | join sports club
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][X] read book
+ 2.[D][ ] return book (by: June 6th)
+ 3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+ 4.[T][X] join sports club
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+T | 1 | join sports club
+```
+
+## TC60: Loaded tasks can be changed and extended
+
+**Aim:** Check that loaded tasks can be marked and unmarked, new tasks continue the numbering, and the file is rewritten.
+
+**Initial file (data/duke.txt):**
+```
+T | 1 | a
+D | 0 | b | c
+```
+
+**Input:**
+```
+todo d
+mark 2
+list
+unmark 1
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] d
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [D][X] b (by: c)
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][X] a
+ 2.[D][X] b (by: c)
+ 3.[T][ ] d
+____________________________________________________________
+____________________________________________________________
+ OK, I've marked this task as not done yet:
+   [T][ ] a
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a
+D | 1 | b | c
+T | 0 | d
+```
+
+## TC61: Load an empty file
+
+**Aim:** Check that an empty save file gives an empty list and can be added to.
+
+**Initial file (data/duke.txt):**
+```
+
+```
+
+**Input:**
+```
+list
+todo a
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a
+```
+
+## TC62: Blank lines in the file are ignored
+
+**Aim:** Check that blank or space-only lines are skipped silently, without a warning.
+
+**Initial file (data/duke.txt):**
+```
+T | 0 | a
+
+   
+T | 1 | b
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] a
+ 2.[T][X] b
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a
+
+   
+T | 1 | b
+```
+
+## TC63: Malformed lines are skipped with a warning
+
+**Aim:** Check that each kind of bad line is reported with its line number and reason, the good lines load, and the bad lines are dropped on the next save.
+
+**Initial file (data/duke.txt):**
+```
+T | 0 | good one
+X | 0 | unknown type
+T | 2 | bad flag
+D | 0 | no date
+E | 0 | only one time | Mon
+D | 0 |  | June 6th
+just some text
+T | 1 | good two
+```
+
+**Input:**
+```
+list
+todo new
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! Some lines in data/duke.txt could not be read and were skipped:
+   line 2: unknown task type "X"
+   line 3: the done flag must be 0 or 1 but was "2"
+   line 4: expected 4 columns for a D task but found 3
+   line 5: expected 5 columns for a E task but found 4
+   line 6: column 3 is empty
+   line 7: expected at least 3 columns but found 1
+ They will be dropped the next time your tasks are saved.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] good one
+ 2.[T][X] good two
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] new
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | good one
+T | 1 | good two
+T | 0 | new
+```
+
+## TC64: Load special characters and spacing
+
+**Aim:** Check that UTF-8 text, inner spaces, marker look-alikes and symbols load unchanged.
+
+**Initial file (data/duke.txt):**
+```
+T | 0 | café ☕ ñ
+T | 0 | read   book
+E | 0 | a /tomorrow | 1 | 2
+D | 1 | pay $5 | 50% off
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] café ☕ ñ
+ 2.[T][ ] read   book
+ 3.[E][ ] a /tomorrow (from: 1 to: 2)
+ 4.[D][X] pay $5 (by: 50% off)
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | café ☕ ñ
+T | 0 | read   book
+E | 0 | a /tomorrow | 1 | 2
+D | 1 | pay $5 | 50% off
+```
+
+## TC65: Loaded task numbers are validated
+
+**Aim:** Check that task numbers are checked against the loaded tasks, not against an empty list.
+
+**Initial file (data/duke.txt):**
+```
+T | 0 | a
+T | 0 | b
+```
+
+**Input:**
+```
+mark 3
+mark 1
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! Task 3 doesn't exist.
+ Choose a number from 1 to 2. Type list to see the tasks.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] a
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][X] a
+ 2.[T][ ] b
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 1 | a
+T | 0 | b
+```
+
+## TC66: More tasks in the file than Eric can hold
+
+**Aim:** Check that a file with 101 tasks loads the first 100 with a warning and does not crash.
+
+**Initial file (data/duke.txt):**
+```
+T | 0 | task 1
+T | 0 | task 2
+T | 0 | task 3
+T | 0 | task 4
+T | 0 | task 5
+T | 0 | task 6
+T | 0 | task 7
+T | 0 | task 8
+T | 0 | task 9
+T | 0 | task 10
+T | 0 | task 11
+T | 0 | task 12
+T | 0 | task 13
+T | 0 | task 14
+T | 0 | task 15
+T | 0 | task 16
+T | 0 | task 17
+T | 0 | task 18
+T | 0 | task 19
+T | 0 | task 20
+T | 0 | task 21
+T | 0 | task 22
+T | 0 | task 23
+T | 0 | task 24
+T | 0 | task 25
+T | 0 | task 26
+T | 0 | task 27
+T | 0 | task 28
+T | 0 | task 29
+T | 0 | task 30
+T | 0 | task 31
+T | 0 | task 32
+T | 0 | task 33
+T | 0 | task 34
+T | 0 | task 35
+T | 0 | task 36
+T | 0 | task 37
+T | 0 | task 38
+T | 0 | task 39
+T | 0 | task 40
+T | 0 | task 41
+T | 0 | task 42
+T | 0 | task 43
+T | 0 | task 44
+T | 0 | task 45
+T | 0 | task 46
+T | 0 | task 47
+T | 0 | task 48
+T | 0 | task 49
+T | 0 | task 50
+T | 0 | task 51
+T | 0 | task 52
+T | 0 | task 53
+T | 0 | task 54
+T | 0 | task 55
+T | 0 | task 56
+T | 0 | task 57
+T | 0 | task 58
+T | 0 | task 59
+T | 0 | task 60
+T | 0 | task 61
+T | 0 | task 62
+T | 0 | task 63
+T | 0 | task 64
+T | 0 | task 65
+T | 0 | task 66
+T | 0 | task 67
+T | 0 | task 68
+T | 0 | task 69
+T | 0 | task 70
+T | 0 | task 71
+T | 0 | task 72
+T | 0 | task 73
+T | 0 | task 74
+T | 0 | task 75
+T | 0 | task 76
+T | 0 | task 77
+T | 0 | task 78
+T | 0 | task 79
+T | 0 | task 80
+T | 0 | task 81
+T | 0 | task 82
+T | 0 | task 83
+T | 0 | task 84
+T | 0 | task 85
+T | 0 | task 86
+T | 0 | task 87
+T | 0 | task 88
+T | 0 | task 89
+T | 0 | task 90
+T | 0 | task 91
+T | 0 | task 92
+T | 0 | task 93
+T | 0 | task 94
+T | 0 | task 95
+T | 0 | task 96
+T | 0 | task 97
+T | 0 | task 98
+T | 0 | task 99
+T | 0 | task 100
+T | 0 | task 101
+```
+
+**Input:**
+```
+mark 100
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! data/duke.txt has 101 tasks, but I can hold only 100.
+ I loaded the first 100. The rest will be dropped the next time your tasks are saved.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] task 100
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | task 1
+T | 0 | task 2
+T | 0 | task 3
+T | 0 | task 4
+T | 0 | task 5
+T | 0 | task 6
+T | 0 | task 7
+T | 0 | task 8
+T | 0 | task 9
+T | 0 | task 10
+T | 0 | task 11
+T | 0 | task 12
+T | 0 | task 13
+T | 0 | task 14
+T | 0 | task 15
+T | 0 | task 16
+T | 0 | task 17
+T | 0 | task 18
+T | 0 | task 19
+T | 0 | task 20
+T | 0 | task 21
+T | 0 | task 22
+T | 0 | task 23
+T | 0 | task 24
+T | 0 | task 25
+T | 0 | task 26
+T | 0 | task 27
+T | 0 | task 28
+T | 0 | task 29
+T | 0 | task 30
+T | 0 | task 31
+T | 0 | task 32
+T | 0 | task 33
+T | 0 | task 34
+T | 0 | task 35
+T | 0 | task 36
+T | 0 | task 37
+T | 0 | task 38
+T | 0 | task 39
+T | 0 | task 40
+T | 0 | task 41
+T | 0 | task 42
+T | 0 | task 43
+T | 0 | task 44
+T | 0 | task 45
+T | 0 | task 46
+T | 0 | task 47
+T | 0 | task 48
+T | 0 | task 49
+T | 0 | task 50
+T | 0 | task 51
+T | 0 | task 52
+T | 0 | task 53
+T | 0 | task 54
+T | 0 | task 55
+T | 0 | task 56
+T | 0 | task 57
+T | 0 | task 58
+T | 0 | task 59
+T | 0 | task 60
+T | 0 | task 61
+T | 0 | task 62
+T | 0 | task 63
+T | 0 | task 64
+T | 0 | task 65
+T | 0 | task 66
+T | 0 | task 67
+T | 0 | task 68
+T | 0 | task 69
+T | 0 | task 70
+T | 0 | task 71
+T | 0 | task 72
+T | 0 | task 73
+T | 0 | task 74
+T | 0 | task 75
+T | 0 | task 76
+T | 0 | task 77
+T | 0 | task 78
+T | 0 | task 79
+T | 0 | task 80
+T | 0 | task 81
+T | 0 | task 82
+T | 0 | task 83
+T | 0 | task 84
+T | 0 | task 85
+T | 0 | task 86
+T | 0 | task 87
+T | 0 | task 88
+T | 0 | task 89
+T | 0 | task 90
+T | 0 | task 91
+T | 0 | task 92
+T | 0 | task 93
+T | 0 | task 94
+T | 0 | task 95
+T | 0 | task 96
+T | 0 | task 97
+T | 0 | task 98
+T | 0 | task 99
+T | 1 | task 100
 ```
