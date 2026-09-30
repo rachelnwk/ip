@@ -27,15 +27,28 @@ bye
 ```
 ````
 
+Optionally, after the expected output, add the expected contents of the file Eric saves (one line per task):
+
+````
+**Expected file (data/duke.txt):**
+```
+T | 1 | read book
+D | 0 | return book | June 6th
+```
+````
+
+Use the single line `(file not created)` when no file should exist. Without this block the file is not checked.
+
 To add a test case, append a section of this shape. Keep `bye` as the last input line.
 
 ## Procedure
 1. Make sure Java 25 is active (see AGENTS.md; `sdk use java 25.0.3.fx-zulu` on macOS if needed).
 2. From the project root run `python3 test/run-ui-tests.py`. The script compiles `src/main/java`, then runs each test case in a fresh `eric.Eric` process, feeding it the case's input.
-3. Show the user the record of the test session: for every test case the script prints its title, aim, console input and console output, followed by PASS. Reproduce this output in your reply (trim nothing the user would need to follow the session).
+3. Show the user the record of the test session: for every test case the script prints its title, aim, console input and console output (and the saved file, if the case checks one), followed by PASS. Reproduce this output in your reply (trim nothing the user would need to follow the session).
 4. If a test case fails, the script stops immediately (no later cases run), exits non-zero and prints the expected and actual output. Report both to the user, and do not continue with the remaining cases.
 5. If the user gives new commands and expected outputs, first record them as test cases in `test/ui-test-plan.md`, then run the script.
 
 ## Notes
+- Each test case runs in its own empty temporary folder, so `data/duke.txt` never touches real data and starts out missing.
 - The comparison is exact line by line, ignoring trailing whitespace; the banner and greeting are stripped first.
 - If a failure is caused by an intended behavior change, update the expected output in the plan (after confirming with the user), then re-run.

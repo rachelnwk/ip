@@ -8,6 +8,8 @@ Tests the Eric command-line UI end to end. Run with the `test-ui` skill
 - Each test case starts a fresh `eric.Eric` process and feeds it the **Input** lines on standard input.
 - The startup banner and greeting are stripped from the output before comparing, so **Expected output** starts right after the banner.
 - The comparison is exact, line by line, ignoring trailing whitespace.
+- Each test case runs in its own empty temporary folder, so `data/duke.txt` starts out missing and real data is never touched.
+- A test case may add an `**Expected file (data/duke.txt):**` block after its expected output; the saved file is then compared too. Use `(file not created)` when no file should exist.
 - The session stops at the first failing test case and reports the actual and expected output.
 - Every input block ends with `bye` so the program exits normally.
 - To add a test case, append a section with the same shape: `## TCn: title`, `**Aim:**`, `**Input:**` code block, `**Expected output:**` code block.
@@ -2117,4 +2119,388 @@ ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
 ____________________________________________________________
+```
+
+## TC51: Save creates the data folder and file
+
+**Aim:** Check that adding a task creates `data/duke.txt`, although the `data` folder does not exist beforehand.
+
+**Input:**
+```
+todo read book
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | read book
+```
+
+## TC52: Save all task types
+
+**Aim:** Check the file format for todos, deadlines and events (events use separate start and end columns) and done flags.
+
+**Input:**
+```
+todo read book
+deadline return book /by June 6th
+event project meeting /from Aug 6th 2pm /to 4pm
+todo join sports club
+mark 1
+mark 4
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] join sports club
+ Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] read book
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] join sports club
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+T | 1 | join sports club
+```
+
+## TC53: Save after mark and unmark
+
+**Aim:** Check that mark and unmark update the file, and only the marked task's flag changes.
+
+**Input:**
+```
+todo a
+todo b
+mark 1
+mark 2
+unmark 1
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] b
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] a
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] b
+____________________________________________________________
+____________________________________________________________
+ OK, I've marked this task as not done yet:
+   [T][ ] a
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a
+T | 1 | b
+```
+
+## TC54: Rejected commands do not change the file
+
+**Aim:** Check that errors between valid commands leave the saved tasks unchanged.
+
+**Input:**
+```
+todo a
+todo
+deadline x
+blah
+mark 9
+mark abc
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The description of a todo is empty.
+ Type a description after "todo", e.g. todo read book
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! A deadline needs a /by date, but I couldn't find one.
+ Use the format: deadline DESCRIPTION /by DATE, e.g. deadline return book /by Sunday
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! I don't know the command "blah".
+ Available commands: todo, deadline, event, list, mark, unmark, bye.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! Task 9 doesn't exist.
+ Choose a number from 1 to 1. Type list to see the tasks.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! "abc" is not a valid task number.
+ Use a plain whole number (no + sign or leading zeros), e.g. mark 2. Type list to see the task numbers.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a
+```
+
+## TC55: No file is written when nothing changes
+
+**Aim:** Check that commands that do not change the list (list, unknown, bad mark) do not create the file.
+
+**Input:**
+```
+list
+blah
+mark 1
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! I don't know the command "blah".
+ Available commands: todo, deadline, event, list, mark, unmark, bye.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! There are no tasks to mark yet.
+ Add a task first, e.g. todo read book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+(file not created)
+```
+
+## TC56: Save special characters
+
+**Aim:** Check that accents, emoji and symbols are written to the file unchanged (UTF-8).
+
+**Input:**
+```
+todo café ☕ ñ
+deadline pay $5 /by 50% off
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] café ☕ ñ
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] pay $5 (by: 50% off)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | café ☕ ñ
+D | 0 | pay $5 | 50% off
+```
+
+## TC57: Save trimmed text
+
+**Aim:** Check that the file holds the trimmed text, with inner spaces and marker look-alikes kept.
+
+**Input:**
+```
+todo   read   book  
+event a /tomorrow /from 1 /to 2
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read   book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] a /tomorrow (from: 1 to: 2)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | read   book
+E | 0 | a /tomorrow | 1 | 2
+```
+
+## TC58: Save ten tasks in order
+
+**Aim:** Check that all tasks are saved in list order, including the marked last one.
+
+**Input:**
+```
+todo task 1
+todo task 2
+todo task 3
+todo task 4
+todo task 5
+todo task 6
+todo task 7
+todo task 8
+todo task 9
+todo task 10
+mark 10
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 1
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 2
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 3
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 4
+ Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 5
+ Now you have 5 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 6
+ Now you have 6 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 7
+ Now you have 7 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 8
+ Now you have 8 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 9
+ Now you have 9 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] task 10
+ Now you have 10 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] task 10
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | task 1
+T | 0 | task 2
+T | 0 | task 3
+T | 0 | task 4
+T | 0 | task 5
+T | 0 | task 6
+T | 0 | task 7
+T | 0 | task 8
+T | 0 | task 9
+T | 1 | task 10
 ```

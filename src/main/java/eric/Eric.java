@@ -1,7 +1,10 @@
 package eric;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Scanner;
 
+import eric.storage.Storage;
 import eric.task.Deadline;
 import eric.task.Event;
 import eric.task.Task;
@@ -13,6 +16,10 @@ import eric.task.Todo;
  */
 public class Eric {
     private static final String DIVIDER = "____________________________________________________________";
+
+    /** Where tasks are saved, relative to the folder Eric is run from. Path.of keeps it OS-independent. */
+    private static final Path DATA_FILE_PATH = Path.of("data", "duke.txt");
+    private static final Storage STORAGE = new Storage(DATA_FILE_PATH);
     private static final int MAX_TASKS = 100;
 
     private static final String COMMAND_LIST = "list";
@@ -156,6 +163,7 @@ public class Eric {
         int newTaskCount = taskCount + 1;
         printWithDivider(" Got it. I've added this task:\n   " + task
                 + "\n Now you have " + newTaskCount + " tasks in the list.");
+        saveTasks(tasks, newTaskCount);
         return newTaskCount;
     }
 
@@ -280,6 +288,7 @@ public class Eric {
         }
 
         setTaskDone(tasks[taskNumber - 1], isDone);
+        saveTasks(tasks, taskCount);
     }
 
     /**
@@ -302,6 +311,16 @@ public class Eric {
         } else {
             task.markUndone();
             printWithDivider(" OK, I've marked this task as not done yet:\n   " + task);
+        }
+    }
+
+    /** Saves the first {@code taskCount} tasks to the data file, and reports to the user if that fails. */
+    private static void saveTasks(Task[] tasks, int taskCount) {
+        try {
+            STORAGE.save(tasks, taskCount);
+        } catch (IOException exception) {
+            printError("I couldn't save your tasks to " + STORAGE.getFilePath() + ".",
+                    "Check that the folder can be written to. Reason: " + exception.getMessage());
         }
     }
 

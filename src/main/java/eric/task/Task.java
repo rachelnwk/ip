@@ -6,6 +6,9 @@ package eric.task;
  * their own type tag and extend the displayed text with their extra details.
  */
 public abstract class Task {
+    /** Separates the columns of a task in the save file. */
+    protected static final String FILE_SEPARATOR = " | ";
+
     protected String description;
     protected boolean isDone;
 
@@ -36,6 +39,11 @@ public abstract class Task {
 
     /** Returns the one-letter tag identifying the task type, e.g. "T", "D", "E". */
     public abstract String getTypeIcon();
+
+    /** Returns this task as one line of the save file, e.g. "T | 1 | read book". */
+    public String toFileString() {
+        return getTypeIcon() + FILE_SEPARATOR + (isDone ? "1" : "0") + FILE_SEPARATOR + description;
+    }
 
     @Override
     public String toString() {
