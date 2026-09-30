@@ -26,4 +26,14 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
    What can I do for you?
    ```
 
+## Building and running a JAR file
+
+The project uses Gradle with the `shadow` plugin to build a single "fat" JAR file (`eric.jar`) that contains everything needed to run Eric. JDK 25 is needed.
+
+1. Build it, from the project root: `./gradlew shadowJar` (on Windows: `gradlew.bat shadowJar`). The first build downloads Gradle, so it needs an internet connection.
+1. The JAR is created at `build/libs/eric.jar`.
+1. Run it with `java -jar build/libs/eric.jar`. Eric saves its tasks in a `data` folder next to where you run the command.
+
+To run Eric without building the JAR, use `./gradlew run`.
+
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
