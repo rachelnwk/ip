@@ -37,7 +37,7 @@ public class Eric {
         Task[] tasks = new Task[MAX_TASKS];
         int taskCount = 0;
 
-        String input = in.hasNextLine() ? in.nextLine() : "bye";
+        String input = readInput(in);
 
         while (!input.equals("bye")) {
             if (input.equals("list")) {
@@ -56,12 +56,19 @@ public class Eric {
                 printWithDivider(" OOPS!!! I'm sorry, but I don't know what that means :-(");
             }
 
-            // Treat end of input (e.g. piped input without "bye") like "bye" instead of crashing
-            input = in.hasNextLine() ? in.nextLine() : "bye";
+            input = readInput(in);
         }
 
         in.close();
         printWithDivider(" Bye. Hope to see you again soon!");
+    }
+
+    /**
+     * Returns the next line of input, or "bye" if the input has ended (e.g. piped input
+     * without "bye"), so that the program exits normally instead of crashing.
+     */
+    private static String readInput(Scanner in) {
+        return in.hasNextLine() ? in.nextLine() : "bye";
     }
 
     /** Returns true if {@code input} is exactly {@code command} or starts with it followed by a space. */
