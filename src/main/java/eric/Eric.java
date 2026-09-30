@@ -67,6 +67,7 @@ public class Eric {
     /** Prints every task added so far, numbered from 1. */
     private static void printTaskList(Task[] tasks, int taskCount) {
         System.out.println(DIVIDER);
+        System.out.println(" Here are the tasks in your list:");
         for (int i = 0; i < taskCount; i++) {
             System.out.println(" " + (i + 1) + "." + tasks[i]);
         }
