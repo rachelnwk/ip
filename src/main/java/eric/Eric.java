@@ -40,27 +40,39 @@ public class Eric {
         String input = readInput(in);
 
         while (!input.equals("bye")) {
-            if (input.equals("list")) {
-                printTaskList(tasks, taskCount);
-            } else if (input.startsWith(PREFIX_MARK)) {
-                markTaskByInput(tasks, taskCount, input.substring(PREFIX_MARK.length()), true);
-            } else if (input.startsWith(PREFIX_UNMARK)) {
-                markTaskByInput(tasks, taskCount, input.substring(PREFIX_UNMARK.length()), false);
-            } else if (isCommand(input, COMMAND_TODO)) {
-                taskCount = addTask(tasks, taskCount, parseTodo(input));
-            } else if (isCommand(input, COMMAND_DEADLINE)) {
-                taskCount = addTask(tasks, taskCount, parseDeadline(input));
-            } else if (isCommand(input, COMMAND_EVENT)) {
-                taskCount = addTask(tasks, taskCount, parseEvent(input));
-            } else {
-                printWithDivider(" OOPS!!! I'm sorry, but I don't know what that means :-(");
-            }
-
+            taskCount = handleCommand(input, tasks, taskCount);
             input = readInput(in);
         }
 
         in.close();
         printWithDivider(" Bye. Hope to see you again soon!");
+    }
+
+    /**
+     * Runs the command in {@code input} and returns the updated number of tasks.
+     *
+     * @param input Line typed by the user.
+     * @param tasks Task list.
+     * @param taskCount Number of tasks currently in {@code tasks}.
+     * @return Number of tasks in {@code tasks} after the command has run.
+     */
+    private static int handleCommand(String input, Task[] tasks, int taskCount) {
+        if (input.equals("list")) {
+            printTaskList(tasks, taskCount);
+        } else if (input.startsWith(PREFIX_MARK)) {
+            markTaskByInput(tasks, taskCount, input.substring(PREFIX_MARK.length()), true);
+        } else if (input.startsWith(PREFIX_UNMARK)) {
+            markTaskByInput(tasks, taskCount, input.substring(PREFIX_UNMARK.length()), false);
+        } else if (isCommand(input, COMMAND_TODO)) {
+            return addTask(tasks, taskCount, parseTodo(input));
+        } else if (isCommand(input, COMMAND_DEADLINE)) {
+            return addTask(tasks, taskCount, parseDeadline(input));
+        } else if (isCommand(input, COMMAND_EVENT)) {
+            return addTask(tasks, taskCount, parseEvent(input));
+        } else {
+            printWithDivider(" OOPS!!! I'm sorry, but I don't know what that means :-(");
+        }
+        return taskCount;
     }
 
     /**
