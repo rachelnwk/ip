@@ -50,7 +50,7 @@ public class Eric {
 
         Scanner in = new Scanner(System.in);
         Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = 0;
+        int taskCount = loadTasks(tasks);
 
         String input = readInput(in);
 
@@ -312,6 +312,40 @@ public class Eric {
             task.markUndone();
             printWithDivider(" OK, I've marked this task as not done yet:\n   " + task);
         }
+    }
+
+    /**
+     * Fills {@code tasks} with the tasks saved in the data file and returns how many were loaded.
+     * Problems, such as unreadable lines, are reported to the user and do not stop Eric from starting.
+     */
+    private static int loadTasks(Task[] tasks) {
+        Storage.LoadResult result;
+        try {
+            result = STORAGE.load();
+        } catch (IOException exception) {
+            printError("I couldn't read your saved tasks from " + STORAGE.getFilePath() + ".",
+                    "Starting with an empty list. The file will be overwritten when you change the list."
+                    + " Reason: " + exception.getMessage());
+            return 0;
+        }
+
+        if (!result.warnings().isEmpty()) {
+            printError("Some lines in " + STORAGE.getFilePath() + " could not be read and were skipped:\n   "
+                    + String.join("\n   ", result.warnings()),
+                    "They will be dropped the next time your tasks are saved.");
+        }
+
+        int loadedCount = Math.min(result.tasks().size(), tasks.length);
+        for (int i = 0; i < loadedCount; i++) {
+            tasks[i] = result.tasks().get(i);
+        }
+        if (result.tasks().size() > tasks.length) {
+            printError(STORAGE.getFilePath() + " has " + result.tasks().size()
+                    + " tasks, but I can hold only " + tasks.length + ".",
+                    "I loaded the first " + tasks.length
+                    + ". The rest will be dropped the next time your tasks are saved.");
+        }
+        return loadedCount;
     }
 
     /** Saves the first {@code taskCount} tasks to the data file, and reports to the user if that fails. */
