@@ -173,13 +173,14 @@ ____________________________________________________________
 
 ## TC7: Invalid task numbers
 
-**Aim:** Check that `mark` rejects out-of-range and non-numeric task numbers.
+**Aim:** Check that `mark` rejects non-numeric, zero and out-of-range task numbers and says what is valid.
 
 **Input:**
 ```
 todo read book
 mark 9
 mark abc
+mark 0
 bye
 ```
 
@@ -191,10 +192,16 @@ ____________________________________________________________
  Now you have 1 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
- OOPS!!! I couldn't find task 9.
+ OOPS!!! Task 9 doesn't exist.
+ Choose a number from 1 to 1. Type list to see the tasks.
 ____________________________________________________________
 ____________________________________________________________
- OOPS!!! That doesn't look like a valid task number.
+ OOPS!!! "abc" is not a valid task number.
+ Use a whole number, e.g. mark 2. Type list to see the task numbers.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! Task 0 doesn't exist.
+ Choose a number from 1 to 1. Type list to see the tasks.
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
@@ -203,7 +210,7 @@ ____________________________________________________________
 
 ## TC8: Malformed task commands
 
-**Aim:** Check that incomplete `todo`, `deadline` and `event` commands print an error and add nothing.
+**Aim:** Check that an empty `todo` and incomplete `deadline` and `event` commands print an error and add nothing.
 
 **Input:**
 ```
@@ -217,13 +224,16 @@ bye
 **Expected output:**
 ```
 ____________________________________________________________
- OOPS!!! The description of a todo cannot be empty.
+ OOPS!!! The description of a todo is empty.
+ Type a description after "todo", e.g. todo read book
 ____________________________________________________________
 ____________________________________________________________
- OOPS!!! A deadline needs a description and a /by date, e.g. deadline return book /by Sunday
+ OOPS!!! A deadline needs a /by date, but I couldn't find one.
+ Use the format: deadline DESCRIPTION /by DATE, e.g. deadline return book /by Sunday
 ____________________________________________________________
 ____________________________________________________________
- OOPS!!! An event needs a description, a /from time, and a /to time, e.g. event project meeting /from Mon 2pm /to 4pm
+ OOPS!!! An event needs a /to time, but I couldn't find one.
+ Use the format: event DESCRIPTION /from START /to END, e.g. event project meeting /from Mon 2pm /to 4pm
 ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
@@ -235,7 +245,7 @@ ____________________________________________________________
 
 ## TC9: Unknown command
 
-**Aim:** Check that an unrecognised command prints the "don't know" message.
+**Aim:** Check that an unrecognised command is named in the error and the valid commands are listed.
 
 **Input:**
 ```
@@ -246,7 +256,204 @@ bye
 **Expected output:**
 ```
 ____________________________________________________________
- OOPS!!! I'm sorry, but I don't know what that means :-(
+ OOPS!!! I don't know the command "blah".
+ Available commands: todo, deadline, event, list, mark, unmark, bye.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC10: Missing task number
+
+**Aim:** Check that `mark` and `unmark` without a number explain what to type.
+
+**Input:**
+```
+mark
+unmark
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! The task number is missing.
+ Type the number of a task after "mark", e.g. mark 2
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The task number is missing.
+ Type the number of a task after "unmark", e.g. unmark 2
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC11: Mark with no tasks
+
+**Aim:** Check that marking when the list is empty says there is nothing to mark.
+
+**Input:**
+```
+mark 1
+unmark 1
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! There are no tasks to mark yet.
+ Add a task first, e.g. todo read book
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! There are no tasks to unmark yet.
+ Add a task first, e.g. todo read book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC12: Deadline errors
+
+**Aim:** Check each way a `deadline` can be invalid gets its own specific message.
+
+**Input:**
+```
+deadline
+deadline /by Sunday
+deadline return book /by
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! A deadline needs a /by date, but I couldn't find one.
+ Use the format: deadline DESCRIPTION /by DATE, e.g. deadline return book /by Sunday
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The description of a deadline is empty.
+ Type a description before /by, e.g. deadline return book /by Sunday
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The date after /by is empty.
+ Type when the task is due after /by, e.g. deadline return book /by Sunday
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC13: Event errors
+
+**Aim:** Check each way an `event` can be invalid gets its own specific message.
+
+**Input:**
+```
+event
+event meeting /to 4pm
+event meeting /to 4pm /from Mon 2pm
+event /from Mon 2pm /to 4pm
+event meeting /from /to 4pm
+event meeting /from Mon 2pm /to
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! An event needs a /from time and a /to time, but I couldn't find either.
+ Use the format: event DESCRIPTION /from START /to END, e.g. event project meeting /from Mon 2pm /to 4pm
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! An event needs a /from time, but I couldn't find one.
+ Use the format: event DESCRIPTION /from START /to END, e.g. event project meeting /from Mon 2pm /to 4pm
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! /to comes before /from.
+ Put /from first, then /to. Use the format: event DESCRIPTION /from START /to END, e.g. event project meeting /from Mon 2pm /to 4pm
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The description of an event is empty.
+ Type a description before /from, e.g. event project meeting /from Mon 2pm /to 4pm
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The start time after /from is empty.
+ Type when the event starts after /from, e.g. event project meeting /from Mon 2pm /to 4pm
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The end time after /to is empty.
+ Type when the event ends after /to, e.g. event project meeting /from Mon 2pm /to 4pm
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC14: Blank and padded input
+
+**Aim:** Check that a blank line is reported and that spaces around a command are ignored.
+
+**Input:**
+```
+
+   list  
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! You didn't type a command.
+ Available commands: todo, deadline, event, list, mark, unmark, bye.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC15: Keeps running after errors
+
+**Aim:** Check that the chatbot stays up after errors and still accepts valid commands.
+
+**Input:**
+```
+todo
+blah
+mark 3
+todo read book
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! The description of a todo is empty.
+ Type a description after "todo", e.g. todo read book
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! I don't know the command "blah".
+ Available commands: todo, deadline, event, list, mark, unmark, bye.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! There are no tasks to mark yet.
+ Add a task first, e.g. todo read book
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] read book
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
