@@ -34,6 +34,8 @@ All Java code in this project (new and modified) MUST follow the SE-EDU Java cod
 
 ## Git
 
+All commits (messages and branch names) MUST follow the SE-EDU Git standard, as captured in the project skill `seedu-git-standard` (`.claude/skills/seedu-git-standard/SKILL.md`). Invoke that skill before proposing or creating any commit message or branch. If it conflicts with another instruction here about commit message format, the standard wins; the required `Co-Authored-By` trailer is still appended last.
+
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
