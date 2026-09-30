@@ -37,6 +37,13 @@ D | 0 | return book | June 6th
 ```
 ````
 
+Instead of file contents, an initial file block can hold one special line to create an unusual starting state:
+
+- `(data folder only)`: the `data` folder exists, but the file does not.
+- `(folder)`: a folder, not a file, exists where the file should be.
+- `(invalid utf-8)`: the file holds bytes that are not valid text.
+- `(windows line endings)` as the first line: the remaining lines are written with CRLF line endings.
+
 Optionally, after the expected output, add the expected contents of the file Eric saves (one line per task):
 
 ````

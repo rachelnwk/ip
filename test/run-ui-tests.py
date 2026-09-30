@@ -4,6 +4,9 @@
 Each test case runs in its own empty temporary folder, so the data file that
 Eric saves (data/duke.txt) never touches real data. It starts out missing,
 unless the test case gives an initial file, which is written there first.
+An initial file whose content is one of the special lines below creates an
+unusual starting state instead; "(windows line endings)" as the first line
+makes the rest of the lines end with CRLF.
 Prints a record of each test case's console input and output (and the saved
 file, if the test case specifies its expected contents), and stops at the
 first failure, reporting the actual and expected output.
@@ -25,6 +28,10 @@ CASE = re.compile(
     r"(?:\n\n\*\*Expected file \(data/duke\.txt\):\*\*\n```\n(.*?)\n```)?",
     re.M | re.S)
 DATA_FILE = Path("data") / "duke.txt"
+DATA_FOLDER_ONLY = "(data folder only)"  # the data folder exists, but the file does not
+FOLDER = "(folder)"  # a folder, not a file, exists where the file should be
+INVALID_UTF8 = "(invalid utf-8)"  # the file holds bytes that are not valid UTF-8 text
+WINDOWS_LINE_ENDINGS = "(windows line endings)"  # first line: the rest uses CRLF line endings
 NO_FILE = "(file not created)"  # write this as the expected file contents if no file should exist
 
 
@@ -39,6 +46,23 @@ def strip_banner(output):
 
 def normalise(lines):
     return [line.rstrip() for line in lines]
+
+
+def write_initial_file(work_dir, content):
+    """Creates the starting state of data/duke.txt that an "Initial file" block describes."""
+    path = Path(work_dir) / DATA_FILE
+    path.parent.mkdir()
+    lines = content.split("\n")
+    if content == DATA_FOLDER_ONLY:
+        return
+    if content == FOLDER:
+        path.mkdir()
+    elif content == INVALID_UTF8:
+        path.write_bytes(b"T | 0 | caf\xe9\n")
+    elif lines[0] == WINDOWS_LINE_ENDINGS:
+        path.write_bytes(("\r\n".join(lines[1:]) + "\r\n").encode("utf-8"))
+    else:
+        path.write_bytes((content + "\n" if content else "").encode("utf-8"))
 
 
 def main():
@@ -56,13 +80,11 @@ def main():
         for title, aim, initial_file, inputs, expected, expected_file in cases:
             with tempfile.TemporaryDirectory() as work_dir:
                 if initial_file is not None:
-                    (Path(work_dir) / DATA_FILE).parent.mkdir()
-                    (Path(work_dir) / DATA_FILE).write_text(
-                        initial_file + "\n" if initial_file else "", encoding="utf-8")
+                    write_initial_file(work_dir, initial_file)
                 run = subprocess.run(["java", "-cp", build_dir, "eric.Eric"], input=inputs + "\n",
                                      capture_output=True, text=True, timeout=30, cwd=work_dir)
                 saved = Path(work_dir) / DATA_FILE
-                actual_file = normalise(saved.read_text(encoding="utf-8").splitlines()) if saved.exists() else None
+                actual_file = normalise(saved.read_text(encoding="utf-8").splitlines()) if saved.is_file() else None
             actual = normalise(strip_banner(run.stdout))
             wanted = normalise(expected.splitlines())
 
