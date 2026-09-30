@@ -3043,3 +3043,283 @@ T | 0 | task 99
 T | 0 | task 100
 T | 0 | task 101
 ```
+
+## TC67: Data folder exists but the file does not
+
+**Aim:** Check that Eric starts with an empty list when the data folder exists without a save file, and then creates the file.
+
+**Initial file (data/duke.txt):**
+```
+(data folder only)
+```
+
+**Input:**
+```
+list
+todo a
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a
+```
+
+## TC68: A folder where the file should be
+
+**Aim:** Check that Eric reports a folder in place of the save file, starts with an empty list and does not crash.
+
+**Initial file (data/duke.txt):**
+```
+(folder)
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! I couldn't load your saved tasks from data/duke.txt because it is a folder, not a file.
+ Starting with an empty list. The file will be replaced the next time your tasks change. To keep it, close Eric, then fix or move the file.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC69: A file that is not valid text
+
+**Aim:** Check that a file with bytes that are not valid UTF-8 text is rejected with a clear reason.
+
+**Initial file (data/duke.txt):**
+```
+(invalid utf-8)
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! I couldn't load your saved tasks from data/duke.txt because it is not valid UTF-8 text.
+ Starting with an empty list. The file will be replaced the next time your tasks change. To keep it, close Eric, then fix or move the file.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC70: A file with Windows line endings
+
+**Aim:** Check that a file saved with CRLF line endings, as on Windows, loads correctly.
+
+**Initial file (data/duke.txt):**
+```
+(windows line endings)
+T | 1 | a
+D | 0 | b | c
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][X] a
+ 2.[D][ ] b (by: c)
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 1 | a
+D | 0 | b | c
+```
+
+## TC71: A file with only blank lines
+
+**Aim:** Check that a file with nothing but blank or space-only lines gives an empty list without a warning.
+
+**Initial file (data/duke.txt):**
+```
+
+   
+
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC72: More kinds of invalid lines
+
+**Aim:** Check the reasons for a lower-case type, a leading space, a done flag that is not 0 or 1, too many columns and an empty time.
+
+**Initial file (data/duke.txt):**
+```
+t | 0 | a
+ T | 0 | a
+T | true | a
+T | 0 | a | b
+D | 0 | a | b | c
+E | 0 | a |  | 4pm
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! I couldn't load your saved tasks from data/duke.txt because it is not in the expected format:
+   line 1: unknown task type "t"
+   line 2: unknown task type " T"
+   line 3: the done flag must be 0 or 1 but was "true"
+   line 4: expected 3 columns for a T task but found 4
+   line 5: expected 4 columns for a D task but found 5
+   line 6: column 4 is empty
+ Starting with an empty list. The file will be replaced the next time your tasks change. To keep it, close Eric, then fix or move the file.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC73: Pipes without spaces are ordinary text
+
+**Aim:** Check that a | that is not surrounded by spaces is part of the text, not a column separator.
+
+**Initial file (data/duke.txt):**
+```
+T | 0 | a|b
+T | 1 | | leading pipe
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] a|b
+ 2.[T][X] | leading pipe
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a|b
+T | 1 | | leading pipe
+```
+
+## TC74: A rejected file is not modified by starting Eric
+
+**Aim:** Check that a rejected file is left exactly as it was while no task is added, marked or unmarked.
+
+**Initial file (data/duke.txt):**
+```
+X | 0 | a
+```
+
+**Input:**
+```
+list
+blah
+mark 1
+todo
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! I couldn't load your saved tasks from data/duke.txt because it is not in the expected format:
+   line 1: unknown task type "X"
+ Starting with an empty list. The file will be replaced the next time your tasks change. To keep it, close Eric, then fix or move the file.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! I don't know the command "blah".
+ Available commands: todo, deadline, event, list, mark, unmark, bye.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! There are no tasks to mark yet.
+ Add a task first, e.g. todo read book
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The description of a todo is empty.
+ Type a description after "todo", e.g. todo read book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+X | 0 | a
+```
