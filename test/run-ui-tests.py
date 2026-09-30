@@ -2,7 +2,8 @@
 """Runs the UI test cases in test/ui-test-plan.md against eric.Eric.
 
 Each test case runs in its own empty temporary folder, so the data file that
-Eric saves (data/duke.txt) never touches real data and starts out missing.
+Eric saves (data/duke.txt) never touches real data. It starts out missing,
+unless the test case gives an initial file, which is written there first.
 Prints a record of each test case's console input and output (and the saved
 file, if the test case specifies its expected contents), and stops at the
 first failure, reporting the actual and expected output.
@@ -17,7 +18,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PLAN = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "test" / "ui-test-plan.md"
 CASE = re.compile(
-    r"^## (TC\d+: .+?)\n\n\*\*Aim:\*\* (.+?)\n\n\*\*Input:\*\*\n```\n(.*?)\n```\n\n"
+    r"^## (TC\d+: .+?)\n\n\*\*Aim:\*\* (.+?)\n\n"
+    r"(?:\*\*Initial file \(data/duke\.txt\):\*\*\n```\n(.*?)\n```\n\n)?"
+    r"\*\*Input:\*\*\n```\n(.*?)\n```\n\n"
     r"\*\*Expected output:\*\*\n```\n(.*?)\n```"
     r"(?:\n\n\*\*Expected file \(data/duke\.txt\):\*\*\n```\n(.*?)\n```)?",
     re.M | re.S)
@@ -50,16 +53,23 @@ def main():
         if compiled.returncode != 0:
             sys.exit("COMPILE ERROR\n" + compiled.stderr)
 
-        for title, aim, inputs, expected, expected_file in cases:
+        for title, aim, initial_file, inputs, expected, expected_file in cases:
             with tempfile.TemporaryDirectory() as work_dir:
+                if initial_file is not None:
+                    (Path(work_dir) / DATA_FILE).parent.mkdir()
+                    (Path(work_dir) / DATA_FILE).write_text(
+                        initial_file + "\n" if initial_file else "", encoding="utf-8")
                 run = subprocess.run(["java", "-cp", build_dir, "eric.Eric"], input=inputs + "\n",
                                      capture_output=True, text=True, timeout=30, cwd=work_dir)
                 saved = Path(work_dir) / DATA_FILE
-                actual_file = saved.read_text(encoding="utf-8").splitlines() if saved.exists() else None
+                actual_file = normalise(saved.read_text(encoding="utf-8").splitlines()) if saved.exists() else None
             actual = normalise(strip_banner(run.stdout))
             wanted = normalise(expected.splitlines())
 
-            print(f"=== {title}\nAim: {aim}\n--- console input\n{inputs}\n--- console output")
+            print(f"=== {title}\nAim: {aim}")
+            if initial_file is not None:
+                print(f"--- initial file {DATA_FILE.as_posix()}\n{initial_file}")
+            print(f"--- console input\n{inputs}\n--- console output")
             print("\n".join(actual))
             if expected_file is not None:
                 print(f"--- saved file {DATA_FILE.as_posix()}")

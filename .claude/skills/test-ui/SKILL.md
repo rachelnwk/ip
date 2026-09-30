@@ -27,6 +27,16 @@ bye
 ```
 ````
 
+Optionally, right after the aim, add the contents of a save file that exists before Eric starts (to test loading). Without it, no file exists at startup:
+
+````
+**Initial file (data/duke.txt):**
+```
+T | 1 | read book
+D | 0 | return book | June 6th
+```
+````
+
 Optionally, after the expected output, add the expected contents of the file Eric saves (one line per task):
 
 ````
@@ -49,6 +59,6 @@ To add a test case, append a section of this shape. Keep `bye` as the last input
 5. If the user gives new commands and expected outputs, first record them as test cases in `test/ui-test-plan.md`, then run the script.
 
 ## Notes
-- Each test case runs in its own empty temporary folder, so `data/duke.txt` never touches real data and starts out missing.
+- Each test case runs in its own empty temporary folder, so `data/duke.txt` never touches real data. It starts out missing unless the case gives an initial file.
 - The comparison is exact line by line, ignoring trailing whitespace; the banner and greeting are stripped first.
 - If a failure is caused by an intended behavior change, update the expected output in the plan (after confirming with the user), then re-run.
