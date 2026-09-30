@@ -255,14 +255,13 @@ public class Eric {
             return;
         }
 
-        int taskNumber;
-        try {
-            taskNumber = Integer.parseInt(trimmedText);
-        } catch (NumberFormatException exception) {
+        if (!isPlainInteger(trimmedText)) {
             printError("\"" + trimmedText + "\" is not a valid task number.",
-                    "Use a whole number, e.g. " + command + " 2. Type list to see the task numbers.");
+                    "Use a plain whole number (no + sign or leading zeros), e.g. " + command
+                    + " 2. Type list to see the task numbers.");
             return;
         }
+        int taskNumber = Integer.parseInt(trimmedText);
 
         if (taskCount == 0) {
             printError("There are no tasks to " + command + " yet.",
@@ -276,6 +275,18 @@ public class Eric {
         }
 
         setTaskDone(tasks[taskNumber - 1], isDone);
+    }
+
+    /**
+     * Returns true if {@code text} is an integer written in its plain form, e.g. "2" or "-1",
+     * but not "+2", "02" or "-0", and small enough to fit in an int.
+     */
+    private static boolean isPlainInteger(String text) {
+        try {
+            return String.valueOf(Integer.parseInt(text)).equals(text);
+        } catch (NumberFormatException exception) {
+            return false;
+        }
     }
 
     /** Updates {@code task}'s done status and prints the matching confirmation. */
