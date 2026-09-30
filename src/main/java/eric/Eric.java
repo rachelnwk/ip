@@ -2,6 +2,11 @@ package eric;
 
 import java.util.Scanner;
 
+import eric.task.Deadline;
+import eric.task.Event;
+import eric.task.Task;
+import eric.task.Todo;
+
 /**
  * Entry point for Eric, a command-line chatbot that manages a simple task list.
  * Reads commands from standard input in a loop until the user types "bye".

@@ -1,4 +1,4 @@
-package eric;
+package eric.task;
 
 /**
  * A task that must be done by a given time, e.g. "deadline return book /by Sunday".

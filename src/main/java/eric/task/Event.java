@@ -1,4 +1,4 @@
-package eric;
+package eric.task;
 
 /**
  * A task that spans a time range, e.g. "event project meeting /from Mon 2pm /to 4pm".
