@@ -1,5 +1,7 @@
 package eric;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import eric.task.Deadline;
@@ -13,22 +15,24 @@ import eric.task.Todo;
  */
 public class Eric {
     private static final String DIVIDER = "____________________________________________________________";
-    private static final int MAX_TASKS = 100;
 
     private static final String COMMAND_LIST = "list";
     private static final String COMMAND_MARK = "mark";
     private static final String COMMAND_UNMARK = "unmark";
+    private static final String COMMAND_DELETE = "delete";
     private static final String COMMAND_TODO = "todo";
     private static final String COMMAND_DEADLINE = "deadline";
     private static final String COMMAND_EVENT = "event";
     private static final String COMMAND_BYE = "bye";
+
+    private static final int NO_INDEX = -1;
 
     private static final String MARKER_BY = "/by";
     private static final String MARKER_FROM = "/from";
     private static final String MARKER_TO = "/to";
 
     private static final String MESSAGE_COMMAND_LIST =
-            "Available commands: todo, deadline, event, list, mark, unmark, bye.";
+            "Available commands: todo, deadline, event, list, mark, unmark, delete, bye.";
     private static final String EXAMPLE_TODO = "todo read book";
     private static final String EXAMPLE_DEADLINE = "deadline return book /by Sunday";
     private static final String EXAMPLE_EVENT = "event project meeting /from Mon 2pm /to 4pm";
@@ -42,13 +46,12 @@ public class Eric {
         printBanner();
 
         Scanner in = new Scanner(System.in);
-        Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = 0;
+        List<Task> tasks = new ArrayList<>();
 
         String input = readInput(in);
 
         while (!input.equals(COMMAND_BYE)) {
-            taskCount = handleCommand(input, tasks, taskCount);
+            handleCommand(input, tasks);
             input = readInput(in);
         }
 
@@ -57,33 +60,32 @@ public class Eric {
     }
 
     /**
-     * Runs the command in {@code input} and returns the updated number of tasks.
+     * Runs the command in {@code input}, updating {@code tasks} if the command changes it.
      * Invalid commands are reported to the user and leave the task list unchanged.
      *
      * @param input Line typed by the user, without surrounding spaces.
      * @param tasks Task list.
-     * @param taskCount Number of tasks currently in {@code tasks}.
-     * @return Number of tasks in {@code tasks} after the command has run.
      */
-    private static int handleCommand(String input, Task[] tasks, int taskCount) {
+    private static void handleCommand(String input, List<Task> tasks) {
         if (input.isEmpty()) {
             printError("You didn't type a command.", MESSAGE_COMMAND_LIST);
         } else if (input.equals(COMMAND_LIST)) {
-            printTaskList(tasks, taskCount);
+            printTaskList(tasks);
         } else if (isCommand(input, COMMAND_MARK)) {
-            markTaskByInput(tasks, taskCount, input.substring(COMMAND_MARK.length()), true);
+            markTaskByInput(tasks, input.substring(COMMAND_MARK.length()), true);
         } else if (isCommand(input, COMMAND_UNMARK)) {
-            markTaskByInput(tasks, taskCount, input.substring(COMMAND_UNMARK.length()), false);
+            markTaskByInput(tasks, input.substring(COMMAND_UNMARK.length()), false);
+        } else if (isCommand(input, COMMAND_DELETE)) {
+            deleteTaskByInput(tasks, input.substring(COMMAND_DELETE.length()));
         } else if (isCommand(input, COMMAND_TODO)) {
-            return addTask(tasks, taskCount, parseTodo(input));
+            addTask(tasks, parseTodo(input));
         } else if (isCommand(input, COMMAND_DEADLINE)) {
-            return addTask(tasks, taskCount, parseDeadline(input));
+            addTask(tasks, parseDeadline(input));
         } else if (isCommand(input, COMMAND_EVENT)) {
-            return addTask(tasks, taskCount, parseEvent(input));
+            addTask(tasks, parseEvent(input));
         } else {
             printError("I don't know the command \"" + input + "\".", MESSAGE_COMMAND_LIST);
         }
-        return taskCount;
     }
 
     /**
@@ -133,12 +135,12 @@ public class Eric {
         System.out.println(DIVIDER);
     }
 
-    /** Prints every task added so far, numbered from 1. */
-    private static void printTaskList(Task[] tasks, int taskCount) {
+    /** Prints every task in the list, numbered from 1. */
+    private static void printTaskList(List<Task> tasks) {
         System.out.println(DIVIDER);
         System.out.println(" Here are the tasks in your list:");
-        for (int i = 0; i < taskCount; i++) {
-            System.out.println(" " + (i + 1) + "." + tasks[i]);
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println(" " + (i + 1) + "." + tasks.get(i));
         }
         System.out.println(DIVIDER);
     }
@@ -148,15 +150,13 @@ public class Eric {
      * unless {@code task} is null (a parse error already reported its own
      * OOPS message), in which case the list is left unchanged.
      */
-    private static int addTask(Task[] tasks, int taskCount, Task task) {
+    private static void addTask(List<Task> tasks, Task task) {
         if (task == null) {
-            return taskCount;
+            return;
         }
-        tasks[taskCount] = task;
-        int newTaskCount = taskCount + 1;
+        tasks.add(task);
         printWithDivider(" Got it. I've added this task:\n   " + task
-                + "\n Now you have " + newTaskCount + " tasks in the list.");
-        return newTaskCount;
+                + "\n Now you have " + tasks.size() + " tasks in the list.");
     }
 
     /** Parses "todo DESCRIPTION"; returns null (after printing an error) if the description is empty. */
@@ -251,35 +251,59 @@ public class Eric {
     }
 
     /** Marks or unmarks the task whose 1-based number is in {@code numberText}, reporting invalid input. */
-    private static void markTaskByInput(Task[] tasks, int taskCount, String numberText, boolean isDone) {
+    private static void markTaskByInput(List<Task> tasks, String numberText, boolean isDone) {
         String command = isDone ? COMMAND_MARK : COMMAND_UNMARK;
+        int index = findTaskIndex(tasks, numberText, command);
+        if (index == NO_INDEX) {
+            return;
+        }
+        setTaskDone(tasks.get(index), isDone);
+    }
+
+    /** Deletes the task whose 1-based number is in {@code numberText}, reporting invalid input. */
+    private static void deleteTaskByInput(List<Task> tasks, String numberText) {
+        int index = findTaskIndex(tasks, numberText, COMMAND_DELETE);
+        if (index == NO_INDEX) {
+            return;
+        }
+        Task removedTask = tasks.remove(index);
+        printWithDivider(" Noted. I've removed this task:\n   " + removedTask
+                + "\n Now you have " + tasks.size() + " tasks in the list.");
+    }
+
+    /**
+     * Converts the 1-based task number in {@code numberText} into an index of {@code tasks}.
+     * If the number is missing, not a plain integer or out of range, prints an error naming
+     * {@code command} and returns {@link #NO_INDEX}.
+     */
+    private static int findTaskIndex(List<Task> tasks, String numberText, String command) {
         String trimmedText = numberText.trim();
         if (trimmedText.isEmpty()) {
             printError("The task number is missing.",
                     "Type the number of a task after \"" + command + "\", e.g. " + command + " 2");
-            return;
+            return NO_INDEX;
         }
 
         if (!isPlainInteger(trimmedText)) {
             printError("\"" + trimmedText + "\" is not a valid task number.",
                     "Use a plain whole number (no + sign or leading zeros), e.g. " + command
                     + " 2. Type list to see the task numbers.");
-            return;
+            return NO_INDEX;
         }
         int taskNumber = Integer.parseInt(trimmedText);
 
-        if (taskCount == 0) {
+        if (tasks.isEmpty()) {
             printError("There are no tasks to " + command + " yet.",
                     "Add a task first, e.g. " + EXAMPLE_TODO);
-            return;
+            return NO_INDEX;
         }
-        if (taskNumber < 1 || taskNumber > taskCount) {
+        if (taskNumber < 1 || taskNumber > tasks.size()) {
             printError("Task " + taskNumber + " doesn't exist.",
-                    "Choose a number from 1 to " + taskCount + ". Type list to see the tasks.");
-            return;
+                    "Choose a number from 1 to " + tasks.size() + ". Type list to see the tasks.");
+            return NO_INDEX;
         }
 
-        setTaskDone(tasks[taskNumber - 1], isDone);
+        return taskNumber - 1;
     }
 
     /**
