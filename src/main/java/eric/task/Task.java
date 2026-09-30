@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
  * their own type tag and extend the displayed text with their extra details.
  */
 public abstract class Task {
-    /** Separates the columns of a task in the save file. */
-    protected static final String FILE_SEPARATOR = " | ";
+    /** Separates the columns of a task in the save file. Task text must not contain it. */
+    public static final String FILE_SEPARATOR = " | ";
 
     private static final String FLAG_DONE = "1";
     private static final String FLAG_NOT_DONE = "0";

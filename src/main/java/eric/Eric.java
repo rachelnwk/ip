@@ -177,7 +177,10 @@ public class Eric {
                     "Type a description after \"todo\", e.g. " + EXAMPLE_TODO);
             return null;
         }
-        return new Todo(description);
+        if (hasNoFileSeparator(description)) {
+            return new Todo(description);
+        }
+        return null;
     }
 
     /** Parses "deadline DESCRIPTION /by DATE"; returns null (after printing an error) if invalid. */
@@ -202,7 +205,10 @@ public class Eric {
                     "Type when the task is due after /by, e.g. " + EXAMPLE_DEADLINE);
             return null;
         }
-        return new Deadline(description, by);
+        if (hasNoFileSeparator(description, by)) {
+            return new Deadline(description, by);
+        }
+        return null;
     }
 
     /** Parses "event DESCRIPTION /from START /to END"; returns null (after printing an error) if invalid. */
@@ -232,7 +238,27 @@ public class Eric {
                     "Type when the event ends after /to, e.g. " + EXAMPLE_EVENT);
             return null;
         }
-        return new Event(description, from, to);
+        if (hasNoFileSeparator(description, from, to)) {
+            return new Event(description, from, to);
+        }
+        return null;
+    }
+
+    /**
+     * Returns true if none of {@code texts} contains the separator of the save file columns. Otherwise
+     * prints an error, because such a task could not be read back from the file, and returns false.
+     */
+    private static boolean hasNoFileSeparator(String... texts) {
+        for (String text : texts) {
+            if (text.contains(Task.FILE_SEPARATOR)) {
+                printError("A task can't contain \"" + Task.FILE_SEPARATOR + "\", because that separates "
+                        + "the columns of the save file.",
+                        "Remove the \"" + Task.FILE_SEPARATOR
+                        + "\" from your command, e.g. use a comma instead.");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
