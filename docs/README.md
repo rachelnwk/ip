@@ -61,6 +61,14 @@ Example: `mark 1`
    [T][X] read book
 ```
 
+## Saving and loading
+
+Eric saves your tasks to `data/duke.txt` (next to where you run Eric) every time the list changes, and loads them again when it starts. The `data` folder and file are created automatically, so nothing is needed on a first run.
+
+Each line is one task: `T | 1 | read book` (todo), `D | 0 | return book | June 6th` (deadline) or `E | 0 | project meeting | Mon 2pm | 4pm` (event). The second column is `1` for done and `0` for not done.
+
+If some lines cannot be read, Eric skips them and tells you which lines and why.
+
 ## Exiting
 
 Format: `bye`
