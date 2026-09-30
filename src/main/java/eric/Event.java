@@ -1,10 +1,21 @@
+package eric;
+
 /**
  * A task that spans a time range, e.g. "event project meeting /from Mon 2pm /to 4pm".
  */
 public class Event extends Task {
+    /** When the event starts, as free text. */
     protected String from;
+    /** When the event ends, as free text. */
     protected String to;
 
+    /**
+     * Creates an event task.
+     *
+     * @param description What the event is about.
+     * @param from When the event starts.
+     * @param to When the event ends.
+     */
     public Event(String description, String from, String to) {
         super(description);
         this.from = from;

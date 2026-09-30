@@ -1,9 +1,18 @@
+package eric;
+
 /**
  * A task that must be done by a given time, e.g. "deadline return book /by Sunday".
  */
 public class Deadline extends Task {
+    /** When the task must be done, as free text. */
     protected String by;
 
+    /**
+     * Creates a deadline task.
+     *
+     * @param description What the task is about.
+     * @param by When the task must be done.
+     */
     public Deadline(String description, String by) {
         super(description);
         this.by = by;

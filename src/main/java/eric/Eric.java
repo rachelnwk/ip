@@ -1,3 +1,5 @@
+package eric;
+
 import java.util.Scanner;
 
 /**
@@ -8,6 +10,11 @@ public class Eric {
     private static final String DIVIDER = "____________________________________________________________";
     private static final int MAX_TASKS = 100;
 
+    /**
+     * Runs the chatbot until the user types "bye" or input ends.
+     *
+     * @param args Command-line arguments (unused).
+     */
     public static void main(String[] args) {
         printBanner();
 
@@ -46,11 +53,11 @@ public class Eric {
     private static void printBanner() {
         System.out.println(DIVIDER);
         String banner = "███████╗██████╗ ██╗ ██████╗\n"
-                      + "██╔════╝██╔══██╗██║██╔════╝\n"
-                      + "█████╗  ██████╔╝██║██║     \n"
-                      + "██╔══╝  ██╔══██╗██║██║     \n"
-                      + "███████╗██║  ██║██║╚██████╗\n"
-                      + "╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝\n";
+                + "██╔════╝██╔══██╗██║██╔════╝\n"
+                + "█████╗  ██████╔╝██║██║     \n"
+                + "██╔══╝  ██╔══██╗██║██║     \n"
+                + "███████╗██║  ██║██║╚██████╗\n"
+                + "╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝\n";
         System.out.println(banner);
         System.out.println("Hello! I'm Eric.");
         System.out.println("What can I do for you?");
@@ -112,7 +119,7 @@ public class Eric {
         return new Deadline(description, by);
     }
 
-    /** Parses "event DESCRIPTION /from START /to END"; returns null (after printing an error) if malformed. */
+    /** Parses "event DESCRIPTION /from START /to END"; returns null (after printing an error) if invalid. */
     private static Task parseEvent(String input) {
         String args = input.length() > 5 ? input.substring(5).trim() : "";
         int fromIndex = args.indexOf("/from ");
@@ -139,7 +146,7 @@ public class Eric {
         int taskNumber;
         try {
             taskNumber = Integer.parseInt(numberText.trim());
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException exception) {
             printWithDivider(" OOPS!!! That doesn't look like a valid task number.");
             return;
         }
