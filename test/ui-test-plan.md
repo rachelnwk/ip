@@ -3323,3 +3323,203 @@ ____________________________________________________________
 ```
 X | 0 | a
 ```
+
+## TC75: Text with spaced pipes is rejected
+
+**Aim:** Check that a | with spaces around it is rejected in a todo description, and in each text part of a deadline and an event, and that nothing is saved.
+
+**Input:**
+```
+todo a | b
+deadline x | y /by z
+deadline x /by y | z
+event e | f /from 1 /to 2
+event e /from 1 | f /to 2
+event e /from 1 /to 2 | f
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! A task can't contain " | ", because that separates the columns of the save file.
+ Remove the " | " from your command, e.g. use a comma instead.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! A task can't contain " | ", because that separates the columns of the save file.
+ Remove the " | " from your command, e.g. use a comma instead.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! A task can't contain " | ", because that separates the columns of the save file.
+ Remove the " | " from your command, e.g. use a comma instead.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! A task can't contain " | ", because that separates the columns of the save file.
+ Remove the " | " from your command, e.g. use a comma instead.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! A task can't contain " | ", because that separates the columns of the save file.
+ Remove the " | " from your command, e.g. use a comma instead.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! A task can't contain " | ", because that separates the columns of the save file.
+ Remove the " | " from your command, e.g. use a comma instead.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+(file not created)
+```
+
+## TC76: Pipes without spaces can be saved
+
+**Aim:** Check that a | at the start, in the middle or at the end of the text is accepted and saved in a form that can be read back.
+
+**Input:**
+```
+todo a|b
+todo | a
+todo a |
+deadline x|y /by |z
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a|b
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] | a
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a |
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] x|y (by: |z)
+ Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] a|b
+ 2.[T][ ] | a
+ 3.[T][ ] a |
+ 4.[D][ ] x|y (by: |z)
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a|b
+T | 0 | | a
+T | 0 | a |
+D | 0 | x|y | |z
+```
+
+## TC77: Text ending with a pipe loads
+
+**Aim:** Check that a saved line whose text ends with a | is read back correctly.
+
+**Initial file (data/duke.txt):**
+```
+T | 0 | a |
+D | 1 | x|y | |z
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] a |
+ 2.[D][X] x|y (by: |z)
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a |
+D | 1 | x|y | |z
+```
+
+## TC78: Rejected text does not disturb valid tasks
+
+**Aim:** Check that rejected commands between valid ones change neither the list nor the saved file.
+
+**Input:**
+```
+todo a
+todo b | c
+todo d
+deadline x /by y | z
+mark 2
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! A task can't contain " | ", because that separates the columns of the save file.
+ Remove the " | " from your command, e.g. use a comma instead.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] d
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! A task can't contain " | ", because that separates the columns of the save file.
+ Remove the " | " from your command, e.g. use a comma instead.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] d
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] a
+ 2.[T][X] d
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a
+T | 1 | d
+```
