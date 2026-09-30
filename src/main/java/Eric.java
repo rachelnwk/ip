@@ -15,7 +15,7 @@ public class Eric {
         Task[] tasks = new Task[MAX_TASKS];
         int taskCount = 0;
 
-        String input = in.nextLine();
+        String input = in.hasNextLine() ? in.nextLine() : "bye";
 
         while (!input.equals("bye")) {
             if (input.equals("list")) {
@@ -34,13 +34,15 @@ public class Eric {
                 printWithDivider(" OOPS!!! I'm sorry, but I don't know what that means :-(");
             }
 
-            input = in.nextLine();
+            // Treat end of input (e.g. piped input without "bye") like "bye" instead of crashing
+            input = in.hasNextLine() ? in.nextLine() : "bye";
         }
 
         in.close();
-        printWithDivider("Bye. Hope to see you again soon!");
+        printWithDivider(" Bye. Hope to see you again soon!");
     }
 
+    /** Prints the startup banner and greeting. */
     private static void printBanner() {
         System.out.println(DIVIDER);
         String banner = "███████╗██████╗ ██╗ ██████╗\n"
@@ -55,6 +57,7 @@ public class Eric {
         System.out.println(DIVIDER);
     }
 
+    /** Prints every task added so far, numbered from 1. */
     private static void printTaskList(Task[] tasks, int taskCount) {
         System.out.println(DIVIDER);
         for (int i = 0; i < taskCount; i++) {
@@ -79,6 +82,7 @@ public class Eric {
         return taskCount;
     }
 
+    /** Parses "todo DESCRIPTION"; returns null (after printing an error) if the description is empty. */
     private static Task parseTodo(String input) {
         String description = input.length() > 4 ? input.substring(4).trim() : "";
         if (description.isEmpty()) {
@@ -88,6 +92,7 @@ public class Eric {
         return new Todo(description);
     }
 
+    /** Parses "deadline DESCRIPTION /by DATE"; returns null (after printing an error) if malformed. */
     private static Task parseDeadline(String input) {
         String args = input.length() > 8 ? input.substring(8).trim() : "";
         int byIndex = args.indexOf("/by ");
@@ -107,6 +112,7 @@ public class Eric {
         return new Deadline(description, by);
     }
 
+    /** Parses "event DESCRIPTION /from START /to END"; returns null (after printing an error) if malformed. */
     private static Task parseEvent(String input) {
         String args = input.length() > 5 ? input.substring(5).trim() : "";
         int fromIndex = args.indexOf("/from ");
@@ -128,6 +134,7 @@ public class Eric {
         return new Event(description, from, to);
     }
 
+    /** Marks or unmarks the task whose 1-based number is in {@code numberText}, reporting invalid input. */
     private static void markTaskByInput(Task[] tasks, int taskCount, String numberText, boolean done) {
         int taskNumber;
         try {
@@ -145,6 +152,7 @@ public class Eric {
         setTaskDone(tasks[taskNumber - 1], done);
     }
 
+    /** Updates {@code task}'s done status and prints the matching confirmation. */
     private static void setTaskDone(Task task, boolean done) {
         if (done) {
             task.markDone();
@@ -155,6 +163,7 @@ public class Eric {
         }
     }
 
+    /** Prints {@code message} between two divider lines. */
     private static void printWithDivider(String message) {
         System.out.println(DIVIDER);
         System.out.println(message);
