@@ -84,7 +84,8 @@ def main():
                 run = subprocess.run(["java", "-cp", build_dir, "eric.Eric"], input=inputs + "\n",
                                      capture_output=True, text=True, timeout=30, cwd=work_dir)
                 saved = Path(work_dir) / DATA_FILE
-                actual_file = normalise(saved.read_text(encoding="utf-8").splitlines()) if saved.is_file() else None
+                actual_file = normalise(saved.read_text(encoding="utf-8", errors="replace").splitlines()) \
+                    if saved.is_file() else None
             actual = normalise(strip_banner(run.stdout))
             wanted = normalise(expected.splitlines())
 
