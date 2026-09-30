@@ -1,4 +1,4 @@
-package eric;
+package eric.task;
 
 /**
  * Base class for tasks tracked by Eric. Every task has a description and a

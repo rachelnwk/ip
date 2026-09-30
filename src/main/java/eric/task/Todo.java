@@ -1,4 +1,4 @@
-package eric;
+package eric.task;
 
 /**
  * A task with no date attached, e.g. "todo read book".
