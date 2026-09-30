@@ -16,6 +16,11 @@ public class Eric {
     private static final String COMMAND_DEADLINE = "deadline";
     private static final String COMMAND_EVENT = "event";
 
+    private static final String MESSAGE_DEADLINE_USAGE =
+            " OOPS!!! A deadline needs a description and a /by date, e.g. deadline return book /by Sunday";
+    private static final String MESSAGE_EVENT_USAGE = " OOPS!!! An event needs a description, a /from time, "
+            + "and a /to time, e.g. event project meeting /from Mon 2pm /to 4pm";
+
     private static final String MARKER_BY = "/by ";
     private static final String MARKER_FROM = "/from ";
     private static final String MARKER_TO = "/to ";
@@ -120,16 +125,14 @@ public class Eric {
         String args = input.substring(COMMAND_DEADLINE.length()).trim();
         int byIndex = args.indexOf(MARKER_BY);
         if (byIndex == -1) {
-            printWithDivider(" OOPS!!! A deadline needs a description and a /by date, "
-                    + "e.g. deadline return book /by Sunday");
+            printWithDivider(MESSAGE_DEADLINE_USAGE);
             return null;
         }
 
         String description = args.substring(0, byIndex).trim();
         String by = args.substring(byIndex + MARKER_BY.length()).trim();
         if (description.isEmpty() || by.isEmpty()) {
-            printWithDivider(" OOPS!!! A deadline needs a description and a /by date, "
-                    + "e.g. deadline return book /by Sunday");
+            printWithDivider(MESSAGE_DEADLINE_USAGE);
             return null;
         }
         return new Deadline(description, by);
@@ -141,8 +144,7 @@ public class Eric {
         int fromIndex = args.indexOf(MARKER_FROM);
         int toIndex = args.indexOf(MARKER_TO);
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
-            printWithDivider(" OOPS!!! An event needs a description, a /from time, and a /to time, "
-                    + "e.g. event project meeting /from Mon 2pm /to 4pm");
+            printWithDivider(MESSAGE_EVENT_USAGE);
             return null;
         }
 
@@ -150,8 +152,7 @@ public class Eric {
         String from = args.substring(fromIndex + MARKER_FROM.length(), toIndex).trim();
         String to = args.substring(toIndex + MARKER_TO.length()).trim();
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            printWithDivider(" OOPS!!! An event needs a description, a /from time, and a /to time, "
-                    + "e.g. event project meeting /from Mon 2pm /to 4pm");
+            printWithDivider(MESSAGE_EVENT_USAGE);
             return null;
         }
         return new Event(description, from, to);
