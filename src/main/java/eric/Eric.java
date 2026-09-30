@@ -2,9 +2,11 @@ package eric;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Scanner;
 
 import eric.storage.Storage;
+import eric.storage.StorageException;
 import eric.task.Deadline;
 import eric.task.Event;
 import eric.task.Task;
@@ -316,36 +318,34 @@ public class Eric {
 
     /**
      * Fills {@code tasks} with the tasks saved in the data file and returns how many were loaded.
-     * Problems, such as unreadable lines, are reported to the user and do not stop Eric from starting.
+     * If the file is unusable, it is rejected as a whole: the problem is reported to the user and
+     * Eric starts with an empty list instead of failing.
      */
     private static int loadTasks(Task[] tasks) {
-        Storage.LoadResult result;
+        List<Task> loadedTasks;
         try {
-            result = STORAGE.load();
-        } catch (IOException exception) {
-            printError("I couldn't read your saved tasks from " + STORAGE.getFilePath() + ".",
-                    "Starting with an empty list. The file will be overwritten when you change the list."
-                    + " Reason: " + exception.getMessage());
+            loadedTasks = STORAGE.load();
+        } catch (StorageException exception) {
+            reportRejectedDataFile("because " + exception.getMessage());
             return 0;
         }
 
-        if (!result.warnings().isEmpty()) {
-            printError("Some lines in " + STORAGE.getFilePath() + " could not be read and were skipped:\n   "
-                    + String.join("\n   ", result.warnings()),
-                    "They will be dropped the next time your tasks are saved.");
+        if (loadedTasks.size() > tasks.length) {
+            reportRejectedDataFile("because it has " + loadedTasks.size()
+                    + " tasks, but I can hold only " + tasks.length + ".");
+            return 0;
         }
+        for (int i = 0; i < loadedTasks.size(); i++) {
+            tasks[i] = loadedTasks.get(i);
+        }
+        return loadedTasks.size();
+    }
 
-        int loadedCount = Math.min(result.tasks().size(), tasks.length);
-        for (int i = 0; i < loadedCount; i++) {
-            tasks[i] = result.tasks().get(i);
-        }
-        if (result.tasks().size() > tasks.length) {
-            printError(STORAGE.getFilePath() + " has " + result.tasks().size()
-                    + " tasks, but I can hold only " + tasks.length + ".",
-                    "I loaded the first " + tasks.length
-                    + ". The rest will be dropped the next time your tasks are saved.");
-        }
-        return loadedCount;
+    /** Tells the user that the data file was not loaded, why, and how to keep it. */
+    private static void reportRejectedDataFile(String reason) {
+        printError("I couldn't load your saved tasks from " + STORAGE.getFilePath() + " " + reason,
+                "Starting with an empty list. The file will be replaced the next time your tasks change."
+                + " To keep it, close Eric, then fix or move the file.");
     }
 
     /** Saves the first {@code taskCount} tasks to the data file, and reports to the user if that fails. */

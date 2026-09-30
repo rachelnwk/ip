@@ -1,6 +1,7 @@
 package eric.storage;
 
 import java.io.IOException;
+import java.nio.charset.MalformedInputException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -15,15 +16,6 @@ import eric.task.Task;
  */
 public class Storage {
     private final Path filePath;
-
-    /**
-     * Tasks read from the save file, together with a message for each line that could not be read.
-     *
-     * @param tasks Tasks read successfully, in file order.
-     * @param warnings One message per skipped line, e.g. "line 2: unknown task type "X"".
-     */
-    public record LoadResult(List<Task> tasks, List<String> warnings) {
-    }
 
     /**
      * Creates a storage that saves to {@code filePath}.
@@ -41,21 +33,25 @@ public class Storage {
     }
 
     /**
-     * Reads the tasks from the save file. A missing file is not an error: it simply means nothing
-     * has been saved yet, so the result has no tasks. Blank lines are ignored, and lines that are
-     * not in the save file format are skipped and reported in the warnings.
+     * Reads the tasks from the save file. A missing file, or a missing folder, is not an error: it
+     * simply means nothing has been saved yet, so the result has no tasks. Blank lines are ignored.
+     * If the file is unusable in any other way, it is rejected as a whole and no tasks are returned.
      *
-     * @return The tasks that were read, and a warning for each skipped line.
-     * @throws IOException If the file exists but cannot be read.
+     * @return The tasks in the file, in file order.
+     * @throws StorageException If the file is not a file, cannot be read, is not valid UTF-8 text, or
+     *         has any line that is not in the save file format. The message lists every invalid line.
      */
-    public LoadResult load() throws IOException {
-        List<Task> tasks = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
+    public List<Task> load() throws StorageException {
         if (!Files.exists(filePath)) {
-            return new LoadResult(tasks, warnings);
+            return new ArrayList<>();
+        }
+        if (Files.isDirectory(filePath)) {
+            throw new StorageException("it is a folder, not a file.");
         }
 
-        List<String> lines = Files.readAllLines(filePath);
+        List<String> lines = readLines();
+        List<Task> tasks = new ArrayList<>();
+        List<String> problems = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
             if (line.isBlank()) {
@@ -64,10 +60,26 @@ public class Storage {
             try {
                 tasks.add(Task.fromFileString(line));
             } catch (IllegalArgumentException exception) {
-                warnings.add("line " + (i + 1) + ": " + exception.getMessage());
+                problems.add("line " + (i + 1) + ": " + exception.getMessage());
             }
         }
-        return new LoadResult(tasks, warnings);
+
+        if (!problems.isEmpty()) {
+            throw new StorageException("it is not in the expected format:\n   "
+                    + String.join("\n   ", problems));
+        }
+        return tasks;
+    }
+
+    /** Returns all lines of the save file, or throws a StorageException that says why it cannot be read. */
+    private List<String> readLines() throws StorageException {
+        try {
+            return Files.readAllLines(filePath);
+        } catch (MalformedInputException exception) {
+            throw new StorageException("it is not valid UTF-8 text.");
+        } catch (IOException exception) {
+            throw new StorageException("it could not be read (" + exception.getMessage() + ").");
+        }
     }
 
     /**

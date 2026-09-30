@@ -2672,9 +2672,9 @@ T | 0 | a
 T | 1 | b
 ```
 
-## TC63: Malformed lines are skipped with a warning
+## TC63: A file with invalid lines is rejected as a whole
 
-**Aim:** Check that each kind of bad line is reported with its line number and reason, the good lines load, and the bad lines are dropped on the next save.
+**Aim:** Check that every invalid line is reported with its line number and reason, that even the valid lines are not loaded, and that the file is replaced by the next save.
 
 **Initial file (data/duke.txt):**
 ```
@@ -2698,24 +2698,22 @@ bye
 **Expected output:**
 ```
 ____________________________________________________________
- OOPS!!! Some lines in data/duke.txt could not be read and were skipped:
+ OOPS!!! I couldn't load your saved tasks from data/duke.txt because it is not in the expected format:
    line 2: unknown task type "X"
    line 3: the done flag must be 0 or 1 but was "2"
    line 4: expected 4 columns for a D task but found 3
    line 5: expected 5 columns for a E task but found 4
    line 6: column 3 is empty
    line 7: expected at least 3 columns but found 1
- They will be dropped the next time your tasks are saved.
+ Starting with an empty list. The file will be replaced the next time your tasks change. To keep it, close Eric, then fix or move the file.
 ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
- 1.[T][ ] good one
- 2.[T][X] good two
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
    [T][ ] new
- Now you have 3 tasks in the list.
+ Now you have 1 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
@@ -2724,8 +2722,6 @@ ____________________________________________________________
 
 **Expected file (data/duke.txt):**
 ```
-T | 0 | good one
-T | 1 | good two
 T | 0 | new
 ```
 
@@ -2813,9 +2809,9 @@ T | 1 | a
 T | 0 | b
 ```
 
-## TC66: More tasks in the file than Eric can hold
+## TC66: A file with more tasks than Eric can hold is rejected
 
-**Aim:** Check that a file with 101 tasks loads the first 100 with a warning and does not crash.
+**Aim:** Check that a file with 101 tasks is rejected as a whole, with no crash, and is left untouched until the list changes.
 
 **Initial file (data/duke.txt):**
 ```
@@ -2931,12 +2927,12 @@ bye
 **Expected output:**
 ```
 ____________________________________________________________
- OOPS!!! data/duke.txt has 101 tasks, but I can hold only 100.
- I loaded the first 100. The rest will be dropped the next time your tasks are saved.
+ OOPS!!! I couldn't load your saved tasks from data/duke.txt because it has 101 tasks, but I can hold only 100.
+ Starting with an empty list. The file will be replaced the next time your tasks change. To keep it, close Eric, then fix or move the file.
 ____________________________________________________________
 ____________________________________________________________
- Nice! I've marked this task as done:
-   [T][X] task 100
+ OOPS!!! There are no tasks to mark yet.
+ Add a task first, e.g. todo read book
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
@@ -3044,5 +3040,6 @@ T | 0 | task 96
 T | 0 | task 97
 T | 0 | task 98
 T | 0 | task 99
-T | 1 | task 100
+T | 0 | task 100
+T | 0 | task 101
 ```
