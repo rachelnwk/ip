@@ -141,15 +141,15 @@ public class Eric {
 
     /** Parses "deadline DESCRIPTION /by DATE"; returns null (after printing an error) if malformed. */
     private static Task parseDeadline(String input) {
-        String args = input.substring(COMMAND_DEADLINE.length()).trim();
-        int byIndex = args.indexOf(MARKER_BY);
+        String arguments = input.substring(COMMAND_DEADLINE.length()).trim();
+        int byIndex = arguments.indexOf(MARKER_BY);
         if (byIndex == -1) {
             printWithDivider(MESSAGE_DEADLINE_USAGE);
             return null;
         }
 
-        String description = args.substring(0, byIndex).trim();
-        String by = args.substring(byIndex + MARKER_BY.length()).trim();
+        String description = arguments.substring(0, byIndex).trim();
+        String by = arguments.substring(byIndex + MARKER_BY.length()).trim();
         if (description.isEmpty() || by.isEmpty()) {
             printWithDivider(MESSAGE_DEADLINE_USAGE);
             return null;
@@ -159,17 +159,17 @@ public class Eric {
 
     /** Parses "event DESCRIPTION /from START /to END"; returns null (after printing an error) if invalid. */
     private static Task parseEvent(String input) {
-        String args = input.substring(COMMAND_EVENT.length()).trim();
-        int fromIndex = args.indexOf(MARKER_FROM);
-        int toIndex = args.indexOf(MARKER_TO);
+        String arguments = input.substring(COMMAND_EVENT.length()).trim();
+        int fromIndex = arguments.indexOf(MARKER_FROM);
+        int toIndex = arguments.indexOf(MARKER_TO);
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
             printWithDivider(MESSAGE_EVENT_USAGE);
             return null;
         }
 
-        String description = args.substring(0, fromIndex).trim();
-        String from = args.substring(fromIndex + MARKER_FROM.length(), toIndex).trim();
-        String to = args.substring(toIndex + MARKER_TO.length()).trim();
+        String description = arguments.substring(0, fromIndex).trim();
+        String from = arguments.substring(fromIndex + MARKER_FROM.length(), toIndex).trim();
+        String to = arguments.substring(toIndex + MARKER_TO.length()).trim();
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
             printWithDivider(MESSAGE_EVENT_USAGE);
             return null;
@@ -178,7 +178,7 @@ public class Eric {
     }
 
     /** Marks or unmarks the task whose 1-based number is in {@code numberText}, reporting invalid input. */
-    private static void markTaskByInput(Task[] tasks, int taskCount, String numberText, boolean done) {
+    private static void markTaskByInput(Task[] tasks, int taskCount, String numberText, boolean isDone) {
         int taskNumber;
         try {
             taskNumber = Integer.parseInt(numberText.trim());
@@ -192,12 +192,12 @@ public class Eric {
             return;
         }
 
-        setTaskDone(tasks[taskNumber - 1], done);
+        setTaskDone(tasks[taskNumber - 1], isDone);
     }
 
     /** Updates {@code task}'s done status and prints the matching confirmation. */
-    private static void setTaskDone(Task task, boolean done) {
-        if (done) {
+    private static void setTaskDone(Task task, boolean isDone) {
+        if (isDone) {
             task.markDone();
             printWithDivider(" Nice! I've marked this task as done:\n   " + task);
         } else {
