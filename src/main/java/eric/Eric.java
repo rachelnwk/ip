@@ -2,14 +2,13 @@ package eric;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 import eric.storage.Storage;
 import eric.storage.StorageException;
 import eric.task.Deadline;
 import eric.task.Event;
 import eric.task.Task;
+import eric.task.TaskList;
 import eric.task.Todo;
 import eric.ui.Ui;
 
@@ -52,7 +51,7 @@ public class Eric {
     public static void main(String[] args) {
         UI.showWelcome();
 
-        List<Task> tasks = loadTasks();
+        TaskList tasks = loadTasks();
 
         String input = readInput();
 
@@ -72,11 +71,11 @@ public class Eric {
      * @param input Line typed by the user, without surrounding spaces.
      * @param tasks Task list.
      */
-    private static void handleCommand(String input, List<Task> tasks) {
+    private static void handleCommand(String input, TaskList tasks) {
         if (input.isEmpty()) {
             UI.showError("You didn't type a command.", MESSAGE_COMMAND_LIST);
         } else if (input.equals(COMMAND_LIST)) {
-            UI.showTaskList(tasks);
+            UI.showTaskList(tasks.getTasks());
         } else if (isCommand(input, COMMAND_MARK)) {
             markTaskByInput(tasks, input.substring(COMMAND_MARK.length()), true);
         } else if (isCommand(input, COMMAND_UNMARK)) {
@@ -130,7 +129,7 @@ public class Eric {
      * unless {@code task} is null (a parse error already reported its own
      * OOPS message), in which case the list is left unchanged.
      */
-    private static void addTask(List<Task> tasks, Task task) {
+    private static void addTask(TaskList tasks, Task task) {
         if (task == null) {
             return;
         }
@@ -257,7 +256,7 @@ public class Eric {
     }
 
     /** Marks or unmarks the task whose 1-based number is in {@code numberText}, reporting invalid input. */
-    private static void markTaskByInput(List<Task> tasks, String numberText, boolean isDone) {
+    private static void markTaskByInput(TaskList tasks, String numberText, boolean isDone) {
         String command = isDone ? COMMAND_MARK : COMMAND_UNMARK;
         int index = findTaskIndex(tasks, numberText, command);
         if (index == NO_INDEX) {
@@ -268,7 +267,7 @@ public class Eric {
     }
 
     /** Deletes the task whose 1-based number is in {@code numberText}, reporting invalid input. */
-    private static void deleteTaskByInput(List<Task> tasks, String numberText) {
+    private static void deleteTaskByInput(TaskList tasks, String numberText) {
         int index = findTaskIndex(tasks, numberText, COMMAND_DELETE);
         if (index == NO_INDEX) {
             return;
@@ -283,7 +282,7 @@ public class Eric {
      * If the number is missing, not a plain integer or out of range, prints an error naming
      * {@code command} and returns {@link #NO_INDEX}.
      */
-    private static int findTaskIndex(List<Task> tasks, String numberText, String command) {
+    private static int findTaskIndex(TaskList tasks, String numberText, String command) {
         String trimmedText = numberText.trim();
         if (trimmedText.isEmpty()) {
             UI.showError("The task number is missing.",
@@ -304,13 +303,14 @@ public class Eric {
                     "Add a task first, e.g. " + EXAMPLE_TODO);
             return NO_INDEX;
         }
-        if (taskNumber < 1 || taskNumber > tasks.size()) {
+        int index = taskNumber - 1;
+        if (!tasks.isValidIndex(index)) {
             UI.showError("Task " + taskNumber + " doesn't exist.",
                     "Choose a number from 1 to " + tasks.size() + ". Type list to see the tasks.");
             return NO_INDEX;
         }
 
-        return taskNumber - 1;
+        return index;
     }
 
     /**
@@ -337,16 +337,16 @@ public class Eric {
     }
 
     /**
-     * Returns the tasks saved in the data file, or an empty list if nothing has been saved yet.
+     * Returns the tasks saved in the data file, or an empty task list if nothing has been saved yet.
      * If the file is unusable, it is rejected as a whole: the problem is reported to the user and
      * Eric starts with an empty list instead of failing.
      */
-    private static List<Task> loadTasks() {
+    private static TaskList loadTasks() {
         try {
-            return STORAGE.load();
+            return new TaskList(STORAGE.load());
         } catch (StorageException exception) {
             reportRejectedDataFile("because " + exception.getMessage());
-            return new ArrayList<>();
+            return new TaskList();
         }
     }
 
@@ -358,9 +358,9 @@ public class Eric {
     }
 
     /** Saves {@code tasks} to the data file, and reports to the user if that fails. */
-    private static void saveTasks(List<Task> tasks) {
+    private static void saveTasks(TaskList tasks) {
         try {
-            STORAGE.save(tasks);
+            STORAGE.save(tasks.getTasks());
         } catch (IOException exception) {
             UI.showError("I couldn't save your tasks to " + STORAGE.getFilePath() + ".",
                     "Check that the folder can be written to. Reason: " + exception.getMessage());
