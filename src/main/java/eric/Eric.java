@@ -2,11 +2,8 @@ package eric;
 
 import java.nio.file.Path;
 
-import eric.command.AddCommand;
 import eric.command.Command;
-import eric.command.DeleteCommand;
-import eric.command.ListCommand;
-import eric.command.MarkCommand;
+import eric.command.ExitCommand;
 import eric.exception.EricException;
 import eric.parser.Parser;
 import eric.storage.Storage;
@@ -41,22 +38,25 @@ public class Eric {
 
     /**
      * Starts Eric: greets the user, loads the saved tasks, and carries out the user's commands until
-     * the user types "bye" or the input ends.
+     * a command ends the program, which happens when the user types "bye" or the input ends.
      */
     public void run() {
         ui.showWelcome();
 
         tasks = loadTasks();
 
-        String input = readInput();
-
-        while (!input.equals(Parser.COMMAND_BYE)) {
-            handleCommand(input);
-            input = readInput();
+        boolean isExit = false;
+        while (!isExit) {
+            try {
+                Command command = Parser.parse(readInput());
+                command.execute(tasks, ui, storage);
+                isExit = command.isExit();
+            } catch (EricException exception) {
+                ui.showError(exception.getMessage(), exception.getFix());
+            }
         }
 
         ui.close();
-        ui.showGoodbye();
     }
 
     /**
@@ -69,50 +69,11 @@ public class Eric {
     }
 
     /**
-     * Runs the command in {@code input}, updating the task list if the command changes it.
-     * Invalid commands are reported to the user and leave the task list unchanged.
-     *
-     * @param input Line typed by the user, without surrounding spaces.
-     */
-    private void handleCommand(String input) {
-        try {
-            Command command = createCommand(input);
-            command.execute(tasks, ui, storage);
-        } catch (EricException exception) {
-            ui.showError(exception.getMessage(), exception.getFix());
-        }
-    }
-
-    /**
-     * Returns the command that {@code input} asks for.
-     *
-     * @param input Line typed by the user, without surrounding spaces.
-     * @throws EricException If {@code input} is not a valid command.
-     */
-    private static Command createCommand(String input) throws EricException {
-        String commandWord = Parser.parseCommandWord(input);
-        String arguments = Parser.getArguments(input, commandWord);
-        return switch (commandWord) {
-        case ListCommand.COMMAND_WORD -> new ListCommand();
-        case MarkCommand.COMMAND_WORD_MARK ->
-                new MarkCommand(Parser.parseTaskNumber(arguments, commandWord), true);
-        case MarkCommand.COMMAND_WORD_UNMARK ->
-                new MarkCommand(Parser.parseTaskNumber(arguments, commandWord), false);
-        case DeleteCommand.COMMAND_WORD ->
-                new DeleteCommand(Parser.parseTaskNumber(arguments, commandWord));
-        case Parser.COMMAND_TODO -> new AddCommand(Parser.parseTodo(arguments));
-        case Parser.COMMAND_DEADLINE -> new AddCommand(Parser.parseDeadline(arguments));
-        case Parser.COMMAND_EVENT -> new AddCommand(Parser.parseEvent(arguments));
-        default -> throw new IllegalStateException("Unhandled command: " + commandWord);
-        };
-    }
-
-    /**
      * Returns the next command typed by the user, or "bye" if the input has ended (e.g. piped
      * input without "bye"), so that the program exits normally instead of crashing.
      */
     private String readInput() {
-        return ui.hasNextCommand() ? ui.readCommand() : Parser.COMMAND_BYE;
+        return ui.hasNextCommand() ? ui.readCommand() : ExitCommand.COMMAND_WORD;
     }
 
     /**

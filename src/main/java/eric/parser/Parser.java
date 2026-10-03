@@ -3,7 +3,9 @@ package eric.parser;
 import java.util.List;
 
 import eric.command.AddCommand;
+import eric.command.Command;
 import eric.command.DeleteCommand;
+import eric.command.ExitCommand;
 import eric.command.ListCommand;
 import eric.command.MarkCommand;
 import eric.exception.EricException;
@@ -14,14 +16,14 @@ import eric.task.Todo;
 
 /**
  * Makes sense of the commands typed by the user: it recognizes the command word, and turns the
- * arguments of a command into tasks and task numbers. Anything that cannot be understood is
- * reported with a {@link EricException} that explains the problem and how to fix it.
+ * arguments of a command into tasks and task numbers, to create the {@link Command} that the user
+ * asked for. Anything that cannot be understood is reported with an {@link EricException} that
+ * explains the problem and how to fix it.
  */
 public final class Parser {
-    public static final String COMMAND_TODO = "todo";
-    public static final String COMMAND_DEADLINE = "deadline";
-    public static final String COMMAND_EVENT = "event";
-    public static final String COMMAND_BYE = "bye";
+    private static final String COMMAND_TODO = "todo";
+    private static final String COMMAND_DEADLINE = "deadline";
+    private static final String COMMAND_EVENT = "event";
 
     private static final List<String> COMMANDS_WITH_ARGUMENTS = List.of(
             MarkCommand.COMMAND_WORD_MARK, MarkCommand.COMMAND_WORD_UNMARK, DeleteCommand.COMMAND_WORD,
@@ -42,19 +44,47 @@ public final class Parser {
     }
 
     /**
-     * Returns the command word that {@code input} starts with. "list" must be typed on its own; the
-     * other commands may be followed by arguments.
+     * Returns the command that the user asked for.
+     *
+     * @param fullCommand Line typed by the user.
+     * @return The command, ready to be executed.
+     * @throws EricException If the line is not a valid command, saying what is wrong and how to fix it.
+     */
+    public static Command parse(String fullCommand) throws EricException {
+        String input = fullCommand.trim();
+        String commandWord = parseCommandWord(input);
+        String arguments = getArguments(input, commandWord);
+        return switch (commandWord) {
+        case ListCommand.COMMAND_WORD -> new ListCommand();
+        case ExitCommand.COMMAND_WORD -> new ExitCommand();
+        case MarkCommand.COMMAND_WORD_MARK -> new MarkCommand(parseTaskNumber(arguments, commandWord), true);
+        case MarkCommand.COMMAND_WORD_UNMARK ->
+                new MarkCommand(parseTaskNumber(arguments, commandWord), false);
+        case DeleteCommand.COMMAND_WORD -> new DeleteCommand(parseTaskNumber(arguments, commandWord));
+        case COMMAND_TODO -> new AddCommand(parseTodo(arguments));
+        case COMMAND_DEADLINE -> new AddCommand(parseDeadline(arguments));
+        case COMMAND_EVENT -> new AddCommand(parseEvent(arguments));
+        default -> throw new IllegalStateException("Unhandled command: " + commandWord);
+        };
+    }
+
+    /**
+     * Returns the command word that {@code input} starts with. "list" and "bye" must be typed on
+     * their own; the other commands may be followed by arguments.
      *
      * @param input Line typed by the user, without surrounding spaces.
      * @return The command word that {@code input} starts with.
      * @throws EricException If {@code input} is empty or does not start with a known command.
      */
-    public static String parseCommandWord(String input) throws EricException {
+    private static String parseCommandWord(String input) throws EricException {
         if (input.isEmpty()) {
             throw new EricException("You didn't type a command.", MESSAGE_COMMAND_LIST);
         }
         if (input.equals(ListCommand.COMMAND_WORD)) {
             return ListCommand.COMMAND_WORD;
+        }
+        if (input.equals(ExitCommand.COMMAND_WORD)) {
+            return ExitCommand.COMMAND_WORD;
         }
         for (String command : COMMANDS_WITH_ARGUMENTS) {
             if (isCommand(input, command)) {
@@ -70,7 +100,7 @@ public final class Parser {
      * @param input Line typed by the user, which starts with {@code command}.
      * @param command Command word of {@code input}.
      */
-    public static String getArguments(String input, String command) {
+    private static String getArguments(String input, String command) {
         return input.substring(command.length()).trim();
     }
 
@@ -80,7 +110,7 @@ public final class Parser {
      * @param arguments Everything typed after "todo".
      * @throws EricException If the description is empty or cannot be saved.
      */
-    public static Task parseTodo(String arguments) throws EricException {
+    private static Task parseTodo(String arguments) throws EricException {
         if (arguments.isEmpty()) {
             throw new EricException("The description of a todo is empty.",
                     "Type a description after \"todo\", e.g. " + AddCommand.EXAMPLE_TODO);
@@ -95,7 +125,7 @@ public final class Parser {
      * @param arguments Everything typed after "deadline".
      * @throws EricException If /by, the description or the date is missing, or cannot be saved.
      */
-    public static Task parseDeadline(String arguments) throws EricException {
+    private static Task parseDeadline(String arguments) throws EricException {
         int byIndex = findMarker(arguments, MARKER_BY);
         if (byIndex == NOT_FOUND) {
             throw new EricException("A deadline needs a /by date, but I couldn't find one.",
@@ -123,7 +153,7 @@ public final class Parser {
      * @throws EricException If /from, /to, the description or a time is missing or misplaced, or
      *         cannot be saved.
      */
-    public static Task parseEvent(String arguments) throws EricException {
+    private static Task parseEvent(String arguments) throws EricException {
         int fromIndex = findMarker(arguments, MARKER_FROM);
         int toIndex = findMarker(arguments, MARKER_TO);
         requireValidEventMarkers(fromIndex, toIndex);
@@ -155,7 +185,7 @@ public final class Parser {
      * @param command Command word, used in the messages.
      * @throws EricException If the number is missing or is not a plain whole number.
      */
-    public static int parseTaskNumber(String arguments, String command) throws EricException {
+    private static int parseTaskNumber(String arguments, String command) throws EricException {
         if (arguments.isEmpty()) {
             throw new EricException("The task number is missing.",
                     "Type the number of a task after \"" + command + "\", e.g. " + command + " 2");

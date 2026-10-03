@@ -22,6 +22,11 @@ public abstract class Command {
      */
     public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws EricException;
 
+    /** Returns true if carrying out this command ends the program. */
+    public boolean isExit() {
+        return false;
+    }
+
     /**
      * Converts the 1-based task number typed by the user into an index of the task list.
      *
