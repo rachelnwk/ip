@@ -3,13 +3,12 @@ package eric;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import eric.parser.ParseException;
+import eric.parser.Parser;
 import eric.storage.Storage;
 import eric.storage.StorageException;
-import eric.task.Deadline;
-import eric.task.Event;
 import eric.task.Task;
 import eric.task.TaskList;
-import eric.task.Todo;
 import eric.ui.Ui;
 
 /**
@@ -22,26 +21,7 @@ public class Eric {
     private static final Storage STORAGE = new Storage(DATA_FILE_PATH);
     private static final Ui UI = new Ui();
 
-    private static final String COMMAND_LIST = "list";
-    private static final String COMMAND_MARK = "mark";
-    private static final String COMMAND_UNMARK = "unmark";
-    private static final String COMMAND_DELETE = "delete";
-    private static final String COMMAND_TODO = "todo";
-    private static final String COMMAND_DEADLINE = "deadline";
-    private static final String COMMAND_EVENT = "event";
-    private static final String COMMAND_BYE = "bye";
-
     private static final int NO_INDEX = -1;
-
-    private static final String MARKER_BY = "/by";
-    private static final String MARKER_FROM = "/from";
-    private static final String MARKER_TO = "/to";
-
-    private static final String MESSAGE_COMMAND_LIST =
-            "Available commands: todo, deadline, event, list, mark, unmark, delete, bye.";
-    private static final String EXAMPLE_TODO = "todo read book";
-    private static final String EXAMPLE_DEADLINE = "deadline return book /by Sunday";
-    private static final String EXAMPLE_EVENT = "event project meeting /from Mon 2pm /to 4pm";
 
     /**
      * Runs the chatbot until the user types "bye" or input ends.
@@ -55,7 +35,7 @@ public class Eric {
 
         String input = readInput();
 
-        while (!input.equals(COMMAND_BYE)) {
+        while (!input.equals(Parser.COMMAND_BYE)) {
             handleCommand(input, tasks);
             input = readInput();
         }
@@ -72,24 +52,21 @@ public class Eric {
      * @param tasks Task list.
      */
     private static void handleCommand(String input, TaskList tasks) {
-        if (input.isEmpty()) {
-            UI.showError("You didn't type a command.", MESSAGE_COMMAND_LIST);
-        } else if (input.equals(COMMAND_LIST)) {
-            UI.showTaskList(tasks.getTasks());
-        } else if (isCommand(input, COMMAND_MARK)) {
-            markTaskByInput(tasks, input.substring(COMMAND_MARK.length()), true);
-        } else if (isCommand(input, COMMAND_UNMARK)) {
-            markTaskByInput(tasks, input.substring(COMMAND_UNMARK.length()), false);
-        } else if (isCommand(input, COMMAND_DELETE)) {
-            deleteTaskByInput(tasks, input.substring(COMMAND_DELETE.length()));
-        } else if (isCommand(input, COMMAND_TODO)) {
-            addTask(tasks, parseTodo(input));
-        } else if (isCommand(input, COMMAND_DEADLINE)) {
-            addTask(tasks, parseDeadline(input));
-        } else if (isCommand(input, COMMAND_EVENT)) {
-            addTask(tasks, parseEvent(input));
-        } else {
-            UI.showError("I don't know the command \"" + input + "\".", MESSAGE_COMMAND_LIST);
+        try {
+            String command = Parser.parseCommandWord(input);
+            String arguments = Parser.getArguments(input, command);
+            switch (command) {
+            case Parser.COMMAND_LIST -> UI.showTaskList(tasks.getTasks());
+            case Parser.COMMAND_MARK -> markTaskByNumber(tasks, arguments, true);
+            case Parser.COMMAND_UNMARK -> markTaskByNumber(tasks, arguments, false);
+            case Parser.COMMAND_DELETE -> deleteTaskByNumber(tasks, arguments);
+            case Parser.COMMAND_TODO -> addTask(tasks, Parser.parseTodo(arguments));
+            case Parser.COMMAND_DEADLINE -> addTask(tasks, Parser.parseDeadline(arguments));
+            case Parser.COMMAND_EVENT -> addTask(tasks, Parser.parseEvent(arguments));
+            default -> throw new IllegalStateException("Unhandled command: " + command);
+            }
+        } catch (ParseException exception) {
+            UI.showError(exception.getMessage(), exception.getFix());
         }
     }
 
@@ -98,167 +75,27 @@ public class Eric {
      * input without "bye"), so that the program exits normally instead of crashing.
      */
     private static String readInput() {
-        return UI.hasNextCommand() ? UI.readCommand() : COMMAND_BYE;
-    }
-
-    /** Returns true if {@code input} is exactly {@code command} or starts with it followed by a space. */
-    private static boolean isCommand(String input, String command) {
-        return input.equals(command) || input.startsWith(command + " ");
+        return UI.hasNextCommand() ? UI.readCommand() : Parser.COMMAND_BYE;
     }
 
     /**
-     * Returns the index of {@code marker} (e.g. "/by") in {@code text}, or -1 if absent.
-     * The marker must be a whole word, so "/tomorrow" is not mistaken for "/to".
-     */
-    private static int findMarker(String text, String marker) {
-        int index = text.indexOf(marker);
-        while (index != -1) {
-            int end = index + marker.length();
-            boolean isStartOfWord = index == 0 || text.charAt(index - 1) == ' ';
-            boolean isEndOfWord = end == text.length() || text.charAt(end) == ' ';
-            if (isStartOfWord && isEndOfWord) {
-                return index;
-            }
-            index = text.indexOf(marker, index + 1);
-        }
-        return -1;
-    }
-
-    /**
-     * Adds {@code task} to {@code tasks} and prints the confirmation message,
-     * unless {@code task} is null (a parse error already reported its own
-     * OOPS message), in which case the list is left unchanged.
+     * Adds {@code task} to {@code tasks}, tells the user, and saves the tasks.
      */
     private static void addTask(TaskList tasks, Task task) {
-        if (task == null) {
-            return;
-        }
         tasks.add(task);
         UI.showTaskAdded(task, tasks.size());
         saveTasks(tasks);
     }
 
-    /** Parses "todo DESCRIPTION"; returns null (after printing an error) if the description is empty. */
-    private static Task parseTodo(String input) {
-        String description = input.substring(COMMAND_TODO.length()).trim();
-        if (description.isEmpty()) {
-            UI.showError("The description of a todo is empty.",
-                    "Type a description after \"todo\", e.g. " + EXAMPLE_TODO);
-            return null;
-        }
-        if (hasNoFileSeparator(description)) {
-            return new Todo(description);
-        }
-        return null;
-    }
-
-    /** Parses "deadline DESCRIPTION /by DATE"; returns null (after printing an error) if invalid. */
-    private static Task parseDeadline(String input) {
-        String arguments = input.substring(COMMAND_DEADLINE.length()).trim();
-        int byIndex = findMarker(arguments, MARKER_BY);
-        if (byIndex == -1) {
-            UI.showError("A deadline needs a /by date, but I couldn't find one.",
-                    "Use the format: deadline DESCRIPTION /by DATE, e.g. " + EXAMPLE_DEADLINE);
-            return null;
-        }
-
-        String description = arguments.substring(0, byIndex).trim();
-        String by = arguments.substring(byIndex + MARKER_BY.length()).trim();
-        if (description.isEmpty()) {
-            UI.showError("The description of a deadline is empty.",
-                    "Type a description before /by, e.g. " + EXAMPLE_DEADLINE);
-            return null;
-        }
-        if (by.isEmpty()) {
-            UI.showError("The date after /by is empty.",
-                    "Type when the task is due after /by, e.g. " + EXAMPLE_DEADLINE);
-            return null;
-        }
-        if (hasNoFileSeparator(description, by)) {
-            return new Deadline(description, by);
-        }
-        return null;
-    }
-
-    /** Parses "event DESCRIPTION /from START /to END"; returns null (after printing an error) if invalid. */
-    private static Task parseEvent(String input) {
-        String arguments = input.substring(COMMAND_EVENT.length()).trim();
-        int fromIndex = findMarker(arguments, MARKER_FROM);
-        int toIndex = findMarker(arguments, MARKER_TO);
-        if (!hasValidEventMarkers(fromIndex, toIndex)) {
-            return null;
-        }
-
-        String description = arguments.substring(0, fromIndex).trim();
-        String from = arguments.substring(fromIndex + MARKER_FROM.length(), toIndex).trim();
-        String to = arguments.substring(toIndex + MARKER_TO.length()).trim();
-        if (description.isEmpty()) {
-            UI.showError("The description of an event is empty.",
-                    "Type a description before /from, e.g. " + EXAMPLE_EVENT);
-            return null;
-        }
-        if (from.isEmpty()) {
-            UI.showError("The start time after /from is empty.",
-                    "Type when the event starts after /from, e.g. " + EXAMPLE_EVENT);
-            return null;
-        }
-        if (to.isEmpty()) {
-            UI.showError("The end time after /to is empty.",
-                    "Type when the event ends after /to, e.g. " + EXAMPLE_EVENT);
-            return null;
-        }
-        if (hasNoFileSeparator(description, from, to)) {
-            return new Event(description, from, to);
-        }
-        return null;
-    }
-
     /**
-     * Returns true if none of {@code texts} contains the separator of the save file columns. Otherwise
-     * prints an error, because such a task could not be read back from the file, and returns false.
+     * Marks or unmarks the task whose 1-based number is in {@code arguments}, reporting invalid input.
+     *
+     * @throws ParseException If the task number is missing or is not a plain whole number.
      */
-    private static boolean hasNoFileSeparator(String... texts) {
-        for (String text : texts) {
-            if (text.contains(Task.FILE_SEPARATOR)) {
-                UI.showError("A task can't contain \"" + Task.FILE_SEPARATOR + "\", because that separates "
-                        + "the columns of the save file.",
-                        "Remove the \"" + Task.FILE_SEPARATOR
-                        + "\" from your command, e.g. use a comma instead.");
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns true if an event has both /from and /to, in that order. Otherwise prints an
-     * error explaining which marker is missing or misplaced, and returns false.
-     */
-    private static boolean hasValidEventMarkers(int fromIndex, int toIndex) {
-        String format = "Use the format: event DESCRIPTION /from START /to END, e.g. " + EXAMPLE_EVENT;
-        if (fromIndex == -1 && toIndex == -1) {
-            UI.showError("An event needs a /from time and a /to time, but I couldn't find either.", format);
-            return false;
-        }
-        if (fromIndex == -1) {
-            UI.showError("An event needs a /from time, but I couldn't find one.", format);
-            return false;
-        }
-        if (toIndex == -1) {
-            UI.showError("An event needs a /to time, but I couldn't find one.", format);
-            return false;
-        }
-        if (toIndex < fromIndex) {
-            UI.showError("/to comes before /from.", "Put /from first, then /to. " + format);
-            return false;
-        }
-        return true;
-    }
-
-    /** Marks or unmarks the task whose 1-based number is in {@code numberText}, reporting invalid input. */
-    private static void markTaskByInput(TaskList tasks, String numberText, boolean isDone) {
-        String command = isDone ? COMMAND_MARK : COMMAND_UNMARK;
-        int index = findTaskIndex(tasks, numberText, command);
+    private static void markTaskByNumber(TaskList tasks, String arguments, boolean isDone)
+            throws ParseException {
+        String command = isDone ? Parser.COMMAND_MARK : Parser.COMMAND_UNMARK;
+        int index = findTaskIndex(tasks, arguments, command);
         if (index == NO_INDEX) {
             return;
         }
@@ -266,9 +103,13 @@ public class Eric {
         saveTasks(tasks);
     }
 
-    /** Deletes the task whose 1-based number is in {@code numberText}, reporting invalid input. */
-    private static void deleteTaskByInput(TaskList tasks, String numberText) {
-        int index = findTaskIndex(tasks, numberText, COMMAND_DELETE);
+    /**
+     * Deletes the task whose 1-based number is in {@code arguments}, reporting invalid input.
+     *
+     * @throws ParseException If the task number is missing or is not a plain whole number.
+     */
+    private static void deleteTaskByNumber(TaskList tasks, String arguments) throws ParseException {
+        int index = findTaskIndex(tasks, arguments, Parser.COMMAND_DELETE);
         if (index == NO_INDEX) {
             return;
         }
@@ -278,29 +119,19 @@ public class Eric {
     }
 
     /**
-     * Converts the 1-based task number in {@code numberText} into an index of {@code tasks}.
-     * If the number is missing, not a plain integer or out of range, prints an error naming
-     * {@code command} and returns {@link #NO_INDEX}.
+     * Converts the 1-based task number in {@code arguments} into an index of {@code tasks}.
+     * If the number does not refer to a task in the list, prints an error naming {@code command} and
+     * returns {@link #NO_INDEX}.
+     *
+     * @throws ParseException If the task number is missing or is not a plain whole number.
      */
-    private static int findTaskIndex(TaskList tasks, String numberText, String command) {
-        String trimmedText = numberText.trim();
-        if (trimmedText.isEmpty()) {
-            UI.showError("The task number is missing.",
-                    "Type the number of a task after \"" + command + "\", e.g. " + command + " 2");
-            return NO_INDEX;
-        }
-
-        if (!isPlainInteger(trimmedText)) {
-            UI.showError("\"" + trimmedText + "\" is not a valid task number.",
-                    "Use a plain whole number (no + sign or leading zeros), e.g. " + command
-                    + " 2. Type list to see the task numbers.");
-            return NO_INDEX;
-        }
-        int taskNumber = Integer.parseInt(trimmedText);
+    private static int findTaskIndex(TaskList tasks, String arguments, String command)
+            throws ParseException {
+        int taskNumber = Parser.parseTaskNumber(arguments, command);
 
         if (tasks.isEmpty()) {
             UI.showError("There are no tasks to " + command + " yet.",
-                    "Add a task first, e.g. " + EXAMPLE_TODO);
+                    "Add a task first, e.g. " + Parser.EXAMPLE_TODO);
             return NO_INDEX;
         }
         int index = taskNumber - 1;
@@ -311,18 +142,6 @@ public class Eric {
         }
 
         return index;
-    }
-
-    /**
-     * Returns true if {@code text} is an integer written in its plain form, e.g. "2" or "-1",
-     * but not "+2", "02" or "-0", and small enough to fit in an int.
-     */
-    private static boolean isPlainInteger(String text) {
-        try {
-            return String.valueOf(Integer.parseInt(text)).equals(text);
-        } catch (NumberFormatException exception) {
-            return false;
-        }
     }
 
     /** Updates {@code task}'s done status and prints the matching confirmation. */
