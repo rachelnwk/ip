@@ -2,6 +2,7 @@ package eric.parser;
 
 import java.util.List;
 
+import eric.exception.EricException;
 import eric.task.Deadline;
 import eric.task.Event;
 import eric.task.Task;
@@ -10,7 +11,7 @@ import eric.task.Todo;
 /**
  * Makes sense of the commands typed by the user: it recognizes the command word, and turns the
  * arguments of a command into tasks and task numbers. Anything that cannot be understood is
- * reported with a {@link ParseException} that explains the problem and how to fix it.
+ * reported with a {@link EricException} that explains the problem and how to fix it.
  */
 public final class Parser {
     public static final String COMMAND_LIST = "list";
@@ -48,11 +49,11 @@ public final class Parser {
      *
      * @param input Line typed by the user, without surrounding spaces.
      * @return The command word that {@code input} starts with.
-     * @throws ParseException If {@code input} is empty or does not start with a known command.
+     * @throws EricException If {@code input} is empty or does not start with a known command.
      */
-    public static String parseCommandWord(String input) throws ParseException {
+    public static String parseCommandWord(String input) throws EricException {
         if (input.isEmpty()) {
-            throw new ParseException("You didn't type a command.", MESSAGE_COMMAND_LIST);
+            throw new EricException("You didn't type a command.", MESSAGE_COMMAND_LIST);
         }
         if (input.equals(COMMAND_LIST)) {
             return COMMAND_LIST;
@@ -62,7 +63,7 @@ public final class Parser {
                 return command;
             }
         }
-        throw new ParseException("I don't know the command \"" + input + "\".", MESSAGE_COMMAND_LIST);
+        throw new EricException("I don't know the command \"" + input + "\".", MESSAGE_COMMAND_LIST);
     }
 
     /**
@@ -79,11 +80,11 @@ public final class Parser {
      * Creates the task described by the arguments of "todo DESCRIPTION".
      *
      * @param arguments Everything typed after "todo".
-     * @throws ParseException If the description is empty or cannot be saved.
+     * @throws EricException If the description is empty or cannot be saved.
      */
-    public static Task parseTodo(String arguments) throws ParseException {
+    public static Task parseTodo(String arguments) throws EricException {
         if (arguments.isEmpty()) {
-            throw new ParseException("The description of a todo is empty.",
+            throw new EricException("The description of a todo is empty.",
                     "Type a description after \"todo\", e.g. " + EXAMPLE_TODO);
         }
         requireNoFileSeparator(arguments);
@@ -94,23 +95,23 @@ public final class Parser {
      * Creates the task described by the arguments of "deadline DESCRIPTION /by DATE".
      *
      * @param arguments Everything typed after "deadline".
-     * @throws ParseException If /by, the description or the date is missing, or cannot be saved.
+     * @throws EricException If /by, the description or the date is missing, or cannot be saved.
      */
-    public static Task parseDeadline(String arguments) throws ParseException {
+    public static Task parseDeadline(String arguments) throws EricException {
         int byIndex = findMarker(arguments, MARKER_BY);
         if (byIndex == NOT_FOUND) {
-            throw new ParseException("A deadline needs a /by date, but I couldn't find one.",
+            throw new EricException("A deadline needs a /by date, but I couldn't find one.",
                     "Use the format: deadline DESCRIPTION /by DATE, e.g. " + EXAMPLE_DEADLINE);
         }
 
         String description = arguments.substring(0, byIndex).trim();
         String by = arguments.substring(byIndex + MARKER_BY.length()).trim();
         if (description.isEmpty()) {
-            throw new ParseException("The description of a deadline is empty.",
+            throw new EricException("The description of a deadline is empty.",
                     "Type a description before /by, e.g. " + EXAMPLE_DEADLINE);
         }
         if (by.isEmpty()) {
-            throw new ParseException("The date after /by is empty.",
+            throw new EricException("The date after /by is empty.",
                     "Type when the task is due after /by, e.g. " + EXAMPLE_DEADLINE);
         }
         requireNoFileSeparator(description, by);
@@ -121,10 +122,10 @@ public final class Parser {
      * Creates the task described by the arguments of "event DESCRIPTION /from START /to END".
      *
      * @param arguments Everything typed after "event".
-     * @throws ParseException If /from, /to, the description or a time is missing or misplaced, or
+     * @throws EricException If /from, /to, the description or a time is missing or misplaced, or
      *         cannot be saved.
      */
-    public static Task parseEvent(String arguments) throws ParseException {
+    public static Task parseEvent(String arguments) throws EricException {
         int fromIndex = findMarker(arguments, MARKER_FROM);
         int toIndex = findMarker(arguments, MARKER_TO);
         requireValidEventMarkers(fromIndex, toIndex);
@@ -133,15 +134,15 @@ public final class Parser {
         String from = arguments.substring(fromIndex + MARKER_FROM.length(), toIndex).trim();
         String to = arguments.substring(toIndex + MARKER_TO.length()).trim();
         if (description.isEmpty()) {
-            throw new ParseException("The description of an event is empty.",
+            throw new EricException("The description of an event is empty.",
                     "Type a description before /from, e.g. " + EXAMPLE_EVENT);
         }
         if (from.isEmpty()) {
-            throw new ParseException("The start time after /from is empty.",
+            throw new EricException("The start time after /from is empty.",
                     "Type when the event starts after /from, e.g. " + EXAMPLE_EVENT);
         }
         if (to.isEmpty()) {
-            throw new ParseException("The end time after /to is empty.",
+            throw new EricException("The end time after /to is empty.",
                     "Type when the event ends after /to, e.g. " + EXAMPLE_EVENT);
         }
         requireNoFileSeparator(description, from, to);
@@ -154,15 +155,15 @@ public final class Parser {
      *
      * @param arguments Everything typed after the command.
      * @param command Command word, used in the messages.
-     * @throws ParseException If the number is missing or is not a plain whole number.
+     * @throws EricException If the number is missing or is not a plain whole number.
      */
-    public static int parseTaskNumber(String arguments, String command) throws ParseException {
+    public static int parseTaskNumber(String arguments, String command) throws EricException {
         if (arguments.isEmpty()) {
-            throw new ParseException("The task number is missing.",
+            throw new EricException("The task number is missing.",
                     "Type the number of a task after \"" + command + "\", e.g. " + command + " 2");
         }
         if (!isPlainInteger(arguments)) {
-            throw new ParseException("\"" + arguments + "\" is not a valid task number.",
+            throw new EricException("\"" + arguments + "\" is not a valid task number.",
                     "Use a plain whole number (no + sign or leading zeros), e.g. " + command
                     + " 2. Type list to see the task numbers.");
         }
@@ -208,10 +209,10 @@ public final class Parser {
      * Throws if any of {@code texts} contains the separator of the save file columns, because such a
      * task could not be read back from the file.
      */
-    private static void requireNoFileSeparator(String... texts) throws ParseException {
+    private static void requireNoFileSeparator(String... texts) throws EricException {
         for (String text : texts) {
             if (text.contains(Task.FILE_SEPARATOR)) {
-                throw new ParseException("A task can't contain \"" + Task.FILE_SEPARATOR + "\", because that "
+                throw new EricException("A task can't contain \"" + Task.FILE_SEPARATOR + "\", because that "
                         + "separates the columns of the save file.",
                         "Remove the \"" + Task.FILE_SEPARATOR
                         + "\" from your command, e.g. use a comma instead.");
@@ -220,20 +221,20 @@ public final class Parser {
     }
 
     /** Throws, saying which marker is missing or misplaced, unless an event has /from and then /to. */
-    private static void requireValidEventMarkers(int fromIndex, int toIndex) throws ParseException {
+    private static void requireValidEventMarkers(int fromIndex, int toIndex) throws EricException {
         String format = "Use the format: event DESCRIPTION /from START /to END, e.g. " + EXAMPLE_EVENT;
         if (fromIndex == NOT_FOUND && toIndex == NOT_FOUND) {
-            throw new ParseException(
+            throw new EricException(
                     "An event needs a /from time and a /to time, but I couldn't find either.", format);
         }
         if (fromIndex == NOT_FOUND) {
-            throw new ParseException("An event needs a /from time, but I couldn't find one.", format);
+            throw new EricException("An event needs a /from time, but I couldn't find one.", format);
         }
         if (toIndex == NOT_FOUND) {
-            throw new ParseException("An event needs a /to time, but I couldn't find one.", format);
+            throw new EricException("An event needs a /to time, but I couldn't find one.", format);
         }
         if (toIndex < fromIndex) {
-            throw new ParseException("/to comes before /from.", "Put /from first, then /to. " + format);
+            throw new EricException("/to comes before /from.", "Put /from first, then /to. " + format);
         }
     }
 }

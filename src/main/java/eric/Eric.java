@@ -3,7 +3,7 @@ package eric;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import eric.parser.ParseException;
+import eric.exception.EricException;
 import eric.parser.Parser;
 import eric.storage.Storage;
 import eric.storage.StorageException;
@@ -20,8 +20,6 @@ import eric.ui.Ui;
 public class Eric {
     /** Where tasks are saved, relative to the folder Eric is run from. Path.of keeps it OS-independent. */
     private static final Path DATA_FILE_PATH = Path.of("data", "duke.txt");
-
-    private static final int NO_INDEX = -1;
 
     private final Storage storage;
     private final Ui ui;
@@ -87,7 +85,7 @@ public class Eric {
             case Parser.COMMAND_EVENT -> addTask(Parser.parseEvent(arguments));
             default -> throw new IllegalStateException("Unhandled command: " + command);
             }
-        } catch (ParseException exception) {
+        } catch (EricException exception) {
             ui.showError(exception.getMessage(), exception.getFix());
         }
     }
@@ -108,30 +106,26 @@ public class Eric {
     }
 
     /**
-     * Marks or unmarks the task whose 1-based number is in {@code arguments}, reporting invalid input.
+     * Marks or unmarks the task whose 1-based number is in {@code arguments}.
      *
-     * @throws ParseException If the task number is missing or is not a plain whole number.
+     * @throws EricException If the task number is missing, is not a plain whole number, or does not
+     *         refer to a task in the list.
      */
-    private void markTaskByNumber(String arguments, boolean isDone) throws ParseException {
+    private void markTaskByNumber(String arguments, boolean isDone) throws EricException {
         String command = isDone ? Parser.COMMAND_MARK : Parser.COMMAND_UNMARK;
         int index = findTaskIndex(arguments, command);
-        if (index == NO_INDEX) {
-            return;
-        }
         setTaskDone(tasks.get(index), isDone);
         saveTasks();
     }
 
     /**
-     * Deletes the task whose 1-based number is in {@code arguments}, reporting invalid input.
+     * Deletes the task whose 1-based number is in {@code arguments}.
      *
-     * @throws ParseException If the task number is missing or is not a plain whole number.
+     * @throws EricException If the task number is missing, is not a plain whole number, or does not
+     *         refer to a task in the list.
      */
-    private void deleteTaskByNumber(String arguments) throws ParseException {
+    private void deleteTaskByNumber(String arguments) throws EricException {
         int index = findTaskIndex(arguments, Parser.COMMAND_DELETE);
-        if (index == NO_INDEX) {
-            return;
-        }
         Task removedTask = tasks.remove(index);
         ui.showTaskRemoved(removedTask, tasks.size());
         saveTasks();
@@ -139,26 +133,22 @@ public class Eric {
 
     /**
      * Converts the 1-based task number in {@code arguments} into an index of the task list.
-     * If the number does not refer to a task in the list, prints an error naming {@code command} and
-     * returns {@link #NO_INDEX}.
      *
-     * @throws ParseException If the task number is missing or is not a plain whole number.
+     * @throws EricException If the task number is missing, is not a plain whole number, or does not
+     *         refer to a task in the list.
      */
-    private int findTaskIndex(String arguments, String command) throws ParseException {
+    private int findTaskIndex(String arguments, String command) throws EricException {
         int taskNumber = Parser.parseTaskNumber(arguments, command);
 
         if (tasks.isEmpty()) {
-            ui.showError("There are no tasks to " + command + " yet.",
+            throw new EricException("There are no tasks to " + command + " yet.",
                     "Add a task first, e.g. " + Parser.EXAMPLE_TODO);
-            return NO_INDEX;
         }
         int index = taskNumber - 1;
         if (!tasks.isValidIndex(index)) {
-            ui.showError("Task " + taskNumber + " doesn't exist.",
+            throw new EricException("Task " + taskNumber + " doesn't exist.",
                     "Choose a number from 1 to " + tasks.size() + ". Type list to see the tasks.");
-            return NO_INDEX;
         }
-
         return index;
     }
 
