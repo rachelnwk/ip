@@ -2,6 +2,10 @@ package eric.parser;
 
 import java.util.List;
 
+import eric.command.AddCommand;
+import eric.command.DeleteCommand;
+import eric.command.ListCommand;
+import eric.command.MarkCommand;
 import eric.exception.EricException;
 import eric.task.Deadline;
 import eric.task.Event;
@@ -14,20 +18,14 @@ import eric.task.Todo;
  * reported with a {@link EricException} that explains the problem and how to fix it.
  */
 public final class Parser {
-    public static final String COMMAND_LIST = "list";
-    public static final String COMMAND_MARK = "mark";
-    public static final String COMMAND_UNMARK = "unmark";
-    public static final String COMMAND_DELETE = "delete";
     public static final String COMMAND_TODO = "todo";
     public static final String COMMAND_DEADLINE = "deadline";
     public static final String COMMAND_EVENT = "event";
     public static final String COMMAND_BYE = "bye";
 
-    /** An example of a valid command, for messages that suggest what to type. */
-    public static final String EXAMPLE_TODO = "todo read book";
-
-    private static final List<String> COMMANDS_WITH_ARGUMENTS = List.of(COMMAND_MARK, COMMAND_UNMARK,
-            COMMAND_DELETE, COMMAND_TODO, COMMAND_DEADLINE, COMMAND_EVENT);
+    private static final List<String> COMMANDS_WITH_ARGUMENTS = List.of(
+            MarkCommand.COMMAND_WORD_MARK, MarkCommand.COMMAND_WORD_UNMARK, DeleteCommand.COMMAND_WORD,
+            COMMAND_TODO, COMMAND_DEADLINE, COMMAND_EVENT);
 
     private static final String MARKER_BY = "/by";
     private static final String MARKER_FROM = "/from";
@@ -44,8 +42,8 @@ public final class Parser {
     }
 
     /**
-     * Returns the command word of {@code input}, one of the COMMAND_ constants. "list" must be typed
-     * on its own; the other commands may be followed by arguments.
+     * Returns the command word that {@code input} starts with. "list" must be typed on its own; the
+     * other commands may be followed by arguments.
      *
      * @param input Line typed by the user, without surrounding spaces.
      * @return The command word that {@code input} starts with.
@@ -55,8 +53,8 @@ public final class Parser {
         if (input.isEmpty()) {
             throw new EricException("You didn't type a command.", MESSAGE_COMMAND_LIST);
         }
-        if (input.equals(COMMAND_LIST)) {
-            return COMMAND_LIST;
+        if (input.equals(ListCommand.COMMAND_WORD)) {
+            return ListCommand.COMMAND_WORD;
         }
         for (String command : COMMANDS_WITH_ARGUMENTS) {
             if (isCommand(input, command)) {
@@ -85,7 +83,7 @@ public final class Parser {
     public static Task parseTodo(String arguments) throws EricException {
         if (arguments.isEmpty()) {
             throw new EricException("The description of a todo is empty.",
-                    "Type a description after \"todo\", e.g. " + EXAMPLE_TODO);
+                    "Type a description after \"todo\", e.g. " + AddCommand.EXAMPLE_TODO);
         }
         requireNoFileSeparator(arguments);
         return new Todo(arguments);

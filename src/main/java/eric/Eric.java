@@ -1,13 +1,16 @@
 package eric;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
+import eric.command.AddCommand;
+import eric.command.Command;
+import eric.command.DeleteCommand;
+import eric.command.ListCommand;
+import eric.command.MarkCommand;
 import eric.exception.EricException;
 import eric.parser.Parser;
 import eric.storage.Storage;
 import eric.storage.StorageException;
-import eric.task.Task;
 import eric.task.TaskList;
 import eric.ui.Ui;
 
@@ -73,21 +76,35 @@ public class Eric {
      */
     private void handleCommand(String input) {
         try {
-            String command = Parser.parseCommandWord(input);
-            String arguments = Parser.getArguments(input, command);
-            switch (command) {
-            case Parser.COMMAND_LIST -> ui.showTaskList(tasks.getTasks());
-            case Parser.COMMAND_MARK -> markTaskByNumber(arguments, true);
-            case Parser.COMMAND_UNMARK -> markTaskByNumber(arguments, false);
-            case Parser.COMMAND_DELETE -> deleteTaskByNumber(arguments);
-            case Parser.COMMAND_TODO -> addTask(Parser.parseTodo(arguments));
-            case Parser.COMMAND_DEADLINE -> addTask(Parser.parseDeadline(arguments));
-            case Parser.COMMAND_EVENT -> addTask(Parser.parseEvent(arguments));
-            default -> throw new IllegalStateException("Unhandled command: " + command);
-            }
+            Command command = createCommand(input);
+            command.execute(tasks, ui, storage);
         } catch (EricException exception) {
             ui.showError(exception.getMessage(), exception.getFix());
         }
+    }
+
+    /**
+     * Returns the command that {@code input} asks for.
+     *
+     * @param input Line typed by the user, without surrounding spaces.
+     * @throws EricException If {@code input} is not a valid command.
+     */
+    private static Command createCommand(String input) throws EricException {
+        String commandWord = Parser.parseCommandWord(input);
+        String arguments = Parser.getArguments(input, commandWord);
+        return switch (commandWord) {
+        case ListCommand.COMMAND_WORD -> new ListCommand();
+        case MarkCommand.COMMAND_WORD_MARK ->
+                new MarkCommand(Parser.parseTaskNumber(arguments, commandWord), true);
+        case MarkCommand.COMMAND_WORD_UNMARK ->
+                new MarkCommand(Parser.parseTaskNumber(arguments, commandWord), false);
+        case DeleteCommand.COMMAND_WORD ->
+                new DeleteCommand(Parser.parseTaskNumber(arguments, commandWord));
+        case Parser.COMMAND_TODO -> new AddCommand(Parser.parseTodo(arguments));
+        case Parser.COMMAND_DEADLINE -> new AddCommand(Parser.parseDeadline(arguments));
+        case Parser.COMMAND_EVENT -> new AddCommand(Parser.parseEvent(arguments));
+        default -> throw new IllegalStateException("Unhandled command: " + commandWord);
+        };
     }
 
     /**
@@ -96,71 +113,6 @@ public class Eric {
      */
     private String readInput() {
         return ui.hasNextCommand() ? ui.readCommand() : Parser.COMMAND_BYE;
-    }
-
-    /** Adds {@code task} to the task list, tells the user, and saves the tasks. */
-    private void addTask(Task task) {
-        tasks.add(task);
-        ui.showTaskAdded(task, tasks.size());
-        saveTasks();
-    }
-
-    /**
-     * Marks or unmarks the task whose 1-based number is in {@code arguments}.
-     *
-     * @throws EricException If the task number is missing, is not a plain whole number, or does not
-     *         refer to a task in the list.
-     */
-    private void markTaskByNumber(String arguments, boolean isDone) throws EricException {
-        String command = isDone ? Parser.COMMAND_MARK : Parser.COMMAND_UNMARK;
-        int index = findTaskIndex(arguments, command);
-        setTaskDone(tasks.get(index), isDone);
-        saveTasks();
-    }
-
-    /**
-     * Deletes the task whose 1-based number is in {@code arguments}.
-     *
-     * @throws EricException If the task number is missing, is not a plain whole number, or does not
-     *         refer to a task in the list.
-     */
-    private void deleteTaskByNumber(String arguments) throws EricException {
-        int index = findTaskIndex(arguments, Parser.COMMAND_DELETE);
-        Task removedTask = tasks.remove(index);
-        ui.showTaskRemoved(removedTask, tasks.size());
-        saveTasks();
-    }
-
-    /**
-     * Converts the 1-based task number in {@code arguments} into an index of the task list.
-     *
-     * @throws EricException If the task number is missing, is not a plain whole number, or does not
-     *         refer to a task in the list.
-     */
-    private int findTaskIndex(String arguments, String command) throws EricException {
-        int taskNumber = Parser.parseTaskNumber(arguments, command);
-
-        if (tasks.isEmpty()) {
-            throw new EricException("There are no tasks to " + command + " yet.",
-                    "Add a task first, e.g. " + Parser.EXAMPLE_TODO);
-        }
-        int index = taskNumber - 1;
-        if (!tasks.isValidIndex(index)) {
-            throw new EricException("Task " + taskNumber + " doesn't exist.",
-                    "Choose a number from 1 to " + tasks.size() + ". Type list to see the tasks.");
-        }
-        return index;
-    }
-
-    /** Updates {@code task}'s done status and prints the matching confirmation. */
-    private void setTaskDone(Task task, boolean isDone) {
-        if (isDone) {
-            task.markDone();
-            ui.showTaskMarked(task);
-        } else {
-            task.markUndone();
-            ui.showTaskUnmarked(task);
-        }
     }
 
     /**
@@ -182,15 +134,5 @@ public class Eric {
         ui.showError("I couldn't load your saved tasks from " + storage.getFilePath() + " " + reason,
                 "Starting with an empty list. The file will be replaced the next time your tasks change."
                 + " To keep it, close Eric, then fix or move the file.");
-    }
-
-    /** Saves the task list to the data file, and reports to the user if that fails. */
-    private void saveTasks() {
-        try {
-            storage.save(tasks.getTasks());
-        } catch (IOException exception) {
-            ui.showError("I couldn't save your tasks to " + storage.getFilePath() + ".",
-                    "Check that the folder can be written to. Reason: " + exception.getMessage());
-        }
     }
 }
