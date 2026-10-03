@@ -65,6 +65,24 @@ public class Ui {
     }
 
     /**
+     * Shows the tasks that matched a search, numbered from 1 in the order of the results.
+     *
+     * @param matchingTasks The tasks that matched, which may be empty.
+     */
+    public void showMatchingTasks(List<Task> matchingTasks) {
+        if (matchingTasks.isEmpty()) {
+            showMessage(" There are no matching tasks in your list.");
+            return;
+        }
+        System.out.println(DIVIDER);
+        System.out.println(" Here are the matching tasks in your list:");
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            System.out.println(" " + (i + 1) + "." + matchingTasks.get(i));
+        }
+        System.out.println(DIVIDER);
+    }
+
+    /**
      * Confirms that a task was added.
      *
      * @param task The task that was added.

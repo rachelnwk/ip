@@ -3,6 +3,7 @@ package eric.task;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Contains the list of tasks, in the order in which they were added, and the operations on it.
@@ -63,6 +64,20 @@ public class TaskList {
      */
     public Task remove(int index) {
         return tasks.remove(index);
+    }
+
+    /**
+     * Returns the tasks whose description contains {@code keyword}, in list order. Upper and lower
+     * case are treated as the same, and the keyword is plain text, not a pattern.
+     *
+     * @param keyword Text to look for in the descriptions.
+     * @return The matching tasks, which is empty if no description contains the keyword.
+     */
+    public List<Task> find(String keyword) {
+        String lowerCaseKeyword = keyword.toLowerCase(Locale.ROOT);
+        return tasks.stream()
+                .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(lowerCaseKeyword))
+                .toList();
     }
 
     /** Returns a read-only view of the tasks, e.g. for showing or saving them. */

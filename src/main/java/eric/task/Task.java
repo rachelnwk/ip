@@ -36,6 +36,11 @@ public abstract class Task {
         this.isDone = false;
     }
 
+    /** Returns what the task is about. */
+    public String getDescription() {
+        return description;
+    }
+
     /** Returns "X" if the task is done, or a space otherwise. */
     public String getStatusIcon() {
         return (isDone ? "X" : " ");
