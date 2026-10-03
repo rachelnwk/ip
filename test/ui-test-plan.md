@@ -260,7 +260,7 @@ bye
 ```
 ____________________________________________________________
  OOPS!!! I don't know the command "blah".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
@@ -411,7 +411,7 @@ bye
 ```
 ____________________________________________________________
  OOPS!!! You didn't type a command.
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
@@ -443,7 +443,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "blah".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! There are no tasks to mark yet.
@@ -876,35 +876,35 @@ bye
 ```
 ____________________________________________________________
  OOPS!!! I don't know the command "todoread book".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "TODO read book".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "listing".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "list extra".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "mark1".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "bye now".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "deadlines x /by y".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "events".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
@@ -1132,15 +1132,15 @@ bye
 ```
 ____________________________________________________________
  OOPS!!! You didn't type a command.
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! You didn't type a command.
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! You didn't type a command.
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
@@ -1262,7 +1262,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "blah".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
@@ -1900,7 +1900,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! You didn't type a command.
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Nice! I've marked this task as done:
@@ -1908,7 +1908,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "blah".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
@@ -1917,7 +1917,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! You didn't type a command.
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
@@ -2637,19 +2637,19 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "deletes 1".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "delete1".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "DELETE 1".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "delete-1".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
@@ -3562,7 +3562,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "blah".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! Task 9 doesn't exist.
@@ -3601,7 +3601,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "blah".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! There are no tasks to mark yet.
@@ -4343,7 +4343,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! I don't know the command "blah".
- Available commands: todo, deadline, event, list, mark, unmark, delete, bye.
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! There are no tasks to mark yet.
@@ -5412,4 +5412,632 @@ T | 0 | task 98
 T | 0 | task 99
 T | 0 | task 100
 T | 0 | task 101
+```
+
+## TC94: Find example from the specification
+
+**Aim:** Check the specified example: finding a keyword lists the matching tasks, with their done status and details, numbered from 1.
+
+**Input:**
+```
+todo read book
+deadline return book /by June 6th
+event project meeting /from Aug 6th 2pm /to 4pm
+todo join sports club
+mark 1
+mark 2
+find book
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] join sports club
+ Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] read book
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [D][X] return book (by: June 6th)
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][X] read book
+ 2.[D][X] return book (by: June 6th)
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC95: Find ignores upper and lower case
+
+**Aim:** Check that the keyword matches regardless of case, both in the keyword and in the description.
+
+**Input:**
+```
+todo Read BOOK
+todo bOoKs
+todo other
+find book
+find READ
+find BoOk
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] Read BOOK
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] bOoKs
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] other
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] Read BOOK
+ 2.[T][ ] bOoKs
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] Read BOOK
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] Read BOOK
+ 2.[T][ ] bOoKs
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC96: Find with a keyword of several words
+
+**Aim:** Check that everything after find is the keyword, so a phrase must appear as typed.
+
+**Input:**
+```
+todo read book
+todo book read
+todo read a book
+find read book
+find book read
+find read
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] book read
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read a book
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] read book
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] book read
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] read book
+ 2.[T][ ] book read
+ 3.[T][ ] read a book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC97: Find with no match
+
+**Aim:** Check that a keyword that is in no description says there are no matching tasks.
+
+**Input:**
+```
+todo a
+find b
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ There are no matching tasks in your list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC98: Find on an empty list
+
+**Aim:** Check that finding in an empty list says there are no matching tasks, and creates no file.
+
+**Input:**
+```
+find book
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ There are no matching tasks in your list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+(file not created)
+```
+
+## TC99: Find searches only the description
+
+**Aim:** Check that the dates and times of deadlines and events are not searched.
+
+**Input:**
+```
+deadline return /by book
+event party /from book /to book
+todo y
+find book
+find return
+find party
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return (by: book)
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] party (from: book to: book)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] y
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ There are no matching tasks in your list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[D][ ] return (by: book)
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[E][ ] party (from: book to: book)
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC100: Find without a keyword
+
+**Aim:** Check that find on its own, or with only spaces, explains that a keyword is needed.
+
+**Input:**
+```
+find
+find   
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ OOPS!!! The keyword to search for is missing.
+ Type a keyword after "find", e.g. find book
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The keyword to search for is missing.
+ Type a keyword after "find", e.g. find book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+(file not created)
+```
+
+## TC101: Look-alike find commands are unknown
+
+**Aim:** Check that near-miss commands (extra letters, no space, wrong case) are rejected.
+
+**Input:**
+```
+todo book
+finds book
+findbook
+FIND book
+Find book
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! I don't know the command "finds book".
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! I don't know the command "findbook".
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! I don't know the command "FIND book".
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! I don't know the command "Find book".
+ Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | book
+```
+
+## TC102: The keyword is plain text, not a pattern
+
+**Aim:** Check that characters such as . * and [ are searched for literally.
+
+**Input:**
+```
+todo a.b
+todo axb
+todo a*b
+todo [x]
+find .
+find *
+find [x]
+find a.b
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a.b
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] axb
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a*b
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] [x]
+ Now you have 4 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] a.b
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] a*b
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] [x]
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] a.b
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC103: Find does not change the list or the file
+
+**Aim:** Check that finding, with or without matches, leaves the tasks and the saved file as they were.
+
+**Input:**
+```
+todo a
+todo b
+find a
+find z
+find
+list
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] b
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] a
+____________________________________________________________
+____________________________________________________________
+ There are no matching tasks in your list.
+____________________________________________________________
+____________________________________________________________
+ OOPS!!! The keyword to search for is missing.
+ Type a keyword after "find", e.g. find book
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] a
+ 2.[T][ ] b
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 0 | a
+T | 0 | b
+```
+
+## TC104: Find reflects the current list
+
+**Aim:** Check that results follow additions, deletions and status changes.
+
+**Input:**
+```
+todo read book
+todo return book
+find book
+delete 1
+find book
+mark 1
+find book
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] return book
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] read book
+ 2.[T][ ] return book
+____________________________________________________________
+____________________________________________________________
+ Noted. I've removed this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] return book
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] return book
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][X] return book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC105: Find numbers results from 1
+
+**Aim:** Check that results are numbered from 1 in result order, not by their number in the list.
+
+**Input:**
+```
+todo a
+todo target one
+todo target two
+find target
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] a
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] target one
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] target two
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] target one
+ 2.[T][ ] target two
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC106: Find in loaded tasks
+
+**Aim:** Check that tasks loaded from the save file can be found.
+
+**Initial file (data/duke.txt):**
+```
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | party | Mon | Tue
+```
+
+**Input:**
+```
+find book
+find party
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][X] read book
+ 2.[D][ ] return book (by: June 6th)
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[E][ ] party (from: Mon to: Tue)
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+**Expected file (data/duke.txt):**
+```
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | party | Mon | Tue
+```
+
+## TC107: Find with accents and symbols
+
+**Aim:** Check that accented letters ignore case and that symbols are found.
+
+**Input:**
+```
+todo Café ☕
+todo plain
+find CAFÉ
+find ☕
+find café ☕
+bye
+```
+
+**Expected output:**
+```
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] Café ☕
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] plain
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] Café ☕
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] Café ☕
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] Café ☕
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
 ```

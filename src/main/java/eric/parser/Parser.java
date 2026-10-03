@@ -6,6 +6,7 @@ import eric.command.AddCommand;
 import eric.command.Command;
 import eric.command.DeleteCommand;
 import eric.command.ExitCommand;
+import eric.command.FindCommand;
 import eric.command.ListCommand;
 import eric.command.MarkCommand;
 import eric.exception.EricException;
@@ -26,8 +27,8 @@ public final class Parser {
     private static final String COMMAND_EVENT = "event";
 
     private static final List<String> COMMANDS_WITH_ARGUMENTS = List.of(
-            MarkCommand.COMMAND_WORD_MARK, MarkCommand.COMMAND_WORD_UNMARK, DeleteCommand.COMMAND_WORD,
-            COMMAND_TODO, COMMAND_DEADLINE, COMMAND_EVENT);
+            FindCommand.COMMAND_WORD, MarkCommand.COMMAND_WORD_MARK, MarkCommand.COMMAND_WORD_UNMARK,
+            DeleteCommand.COMMAND_WORD, COMMAND_TODO, COMMAND_DEADLINE, COMMAND_EVENT);
 
     private static final String MARKER_BY = "/by";
     private static final String MARKER_FROM = "/from";
@@ -36,7 +37,7 @@ public final class Parser {
     private static final int NOT_FOUND = -1;
 
     private static final String MESSAGE_COMMAND_LIST =
-            "Available commands: todo, deadline, event, list, mark, unmark, delete, bye.";
+            "Available commands: todo, deadline, event, list, find, mark, unmark, delete, bye.";
     private static final String EXAMPLE_DEADLINE = "deadline return book /by Sunday";
     private static final String EXAMPLE_EVENT = "event project meeting /from Mon 2pm /to 4pm";
 
@@ -57,6 +58,7 @@ public final class Parser {
         return switch (commandWord) {
         case ListCommand.COMMAND_WORD -> new ListCommand();
         case ExitCommand.COMMAND_WORD -> new ExitCommand();
+        case FindCommand.COMMAND_WORD -> new FindCommand(parseKeyword(arguments));
         case MarkCommand.COMMAND_WORD_MARK -> new MarkCommand(parseTaskNumber(arguments, commandWord), true);
         case MarkCommand.COMMAND_WORD_UNMARK ->
                 new MarkCommand(parseTaskNumber(arguments, commandWord), false);
@@ -175,6 +177,21 @@ public final class Parser {
         }
         requireNoFileSeparator(description, from, to);
         return new Event(description, from, to);
+    }
+
+    /**
+     * Returns the keyword typed after "find". Everything after the command word is the keyword, so a
+     * keyword can have several words.
+     *
+     * @param arguments Everything typed after "find".
+     * @throws EricException If no keyword was typed.
+     */
+    private static String parseKeyword(String arguments) throws EricException {
+        if (arguments.isEmpty()) {
+            throw new EricException("The keyword to search for is missing.",
+                    "Type a keyword after \"find\", e.g. " + FindCommand.EXAMPLE_FIND);
+        }
+        return arguments;
     }
 
     /**

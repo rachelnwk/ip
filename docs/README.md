@@ -61,6 +61,22 @@ Example: `mark 1`
    [T][X] read book
 ```
 
+## Finding tasks
+
+Shows the tasks whose description contains a keyword. Upper and lower case are treated as the same, only the description is searched (not the dates), and everything after `find` is the keyword, so it can have several words. The results are numbered from 1 in the order of the results, not by their number in the full list.
+
+Format: `find KEYWORD`
+
+Example: `find book`
+
+```
+ Here are the matching tasks in your list:
+ 1.[T][X] read book
+ 2.[D][X] return book (by: June 6th)
+```
+
+If nothing matches, Eric says so.
+
 ## Deleting a task
 
 Removes a task from the list, using its number in the list. The remaining tasks are renumbered.
